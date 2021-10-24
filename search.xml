@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>Docker Desktop(WSL2)修改镜像存储位置</title>
+      <link href="/2021/10/24/windows-wsl-partition/"/>
+      <url>/2021/10/24/windows-wsl-partition/</url>
+      
+        <content type="html"><![CDATA[<h2 id="Docker-Desktop-WSL2-修改镜像存储位置"><a href="#Docker-Desktop-WSL2-修改镜像存储位置" class="headerlink" title="Docker Desktop(WSL2)修改镜像存储位置"></a>Docker Desktop(WSL2)修改镜像存储位置</h2><p>此处我使用的是WSL2的版本，因此docker desktop在安装的时候创建两个wsl子系统，分别为docker-desktop和docker-desktop-data</p><pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 查看已创建子系统</span>C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl -l -v --all  NAME                   STATE           VERSION* docker-desktop         Running         <span class="token number">2</span>  docker-desktop-data    Running         <span class="token number">2</span><span class="token comment"># 立即终止所有正在运行的发行版</span>C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --shutdown<span class="token comment"># 导出wsl子系统镜像</span>C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --export docker-desktop I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop<span class="token punctuation">\</span>docker-desktop.tarC:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --export docker-desktop-data I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop-data<span class="token punctuation">\</span>docker-desktop-data.tar<span class="token comment"># 删除现有的wsl子系统</span>C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --unregister docker-desktopC:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --unregister docker-desktop-data<span class="token comment"># 重新创建wsl子系统</span>C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --import docker-desktop I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop<span class="token punctuation">\</span>docker-desktop.tar --version <span class="token number">2</span>C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --import docker-desktop-data I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop-data I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop-data<span class="token punctuation">\</span>docker-desktop-data.tar --version <span class="token number">2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre><blockquote><p>说明（这两个wsl子系统默认存放在系统盘）：</p><p>默认存储位置：C:\Users\xxxxx\AppData\Local\Docker\wsl</p><p>docker-desktop：存放程序</p><p>docker-desktop-data：存放镜像</p></blockquote>]]></content>
+      
+      
+      <categories>
+          
+          <category> 运维 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> docker </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>基于Docker的Redis集群搭建</title>
       <link href="/2021/06/26/docker-redis-cluster/"/>
       <url>/2021/06/26/docker-redis-cluster/</url>

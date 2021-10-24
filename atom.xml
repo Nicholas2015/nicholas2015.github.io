@@ -6,7 +6,7 @@
   <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
   
   <link href="https://nicholas2015.github.io/"/>
-  <updated>2021-06-27T09:25:52.374Z</updated>
+  <updated>2021-10-24T11:42:18.879Z</updated>
   <id>https://nicholas2015.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Docker Desktop(WSL2)修改镜像存储位置</title>
+    <link href="https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/"/>
+    <id>https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/</id>
+    <published>2021-10-24T11:41:16.000Z</published>
+    <updated>2021-10-24T11:42:18.879Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Docker-Desktop-WSL2-修改镜像存储位置&quot;&gt;&lt;a href=&quot;#Docker-Desktop-WSL2-修改镜像存储位置&quot; class=&quot;headerlink&quot; title=&quot;Docker</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://nicholas2015.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="docker" scheme="https://nicholas2015.github.io/tags/docker/"/>
+    
+  </entry>
   
   <entry>
     <title>基于Docker的Redis集群搭建</title>

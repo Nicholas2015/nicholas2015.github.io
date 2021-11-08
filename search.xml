@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>Redis基础</title>
+      <link href="/2021/11/08/redis/"/>
+      <url>/2021/11/08/redis/</url>
+      
+        <content type="html"><![CDATA[<h2 id="Redis基础"><a href="#Redis基础" class="headerlink" title="Redis基础"></a>Redis基础</h2><p><a href="http://redisdoc.com/">Redis学习参考网站</a></p><h4 id="1-数据类型及基本操作指令"><a href="#1-数据类型及基本操作指令" class="headerlink" title="1. 数据类型及基本操作指令"></a>1. 数据类型及基本操作指令</h4><blockquote><ul><li><p>String </p><ul><li><p>incr指令</p><ul><li>用途：分布式ID、计数器</li></ul></li><li><p>setnx 如果不存在则存入，否则存入失败</p><ul><li>用途：锁（互斥标志）</li><li>问题：如果并发了怎么办？不会存在并发，因为命令执行是单线程，只要能保证抢标记</li></ul></li><li><p>场景</p><ul><li><p>缓存，存储session</p></li><li><p>分布式锁，单线程</p></li><li><p>计数器，分布式ID</p></li><li><p>问题：死锁（锁 必须得有 有效期）</p><pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// 伪代码</span><span class="token keyword">if</span><span class="token punctuation">(</span>set<span class="token punctuation">)</span> <span class="token comment">// 拿到锁</span><span class="token punctuation">{</span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token comment">// 系统挂了</span>   <span class="token comment">// 设置过期时间 该处逻辑不会被执行</span><span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li></ul></li></ul></li><li><p>Hash</p></li><li><p>List</p></li><li><p>Set</p></li><li></li></ul></blockquote>]]></content>
+      
+      
+      <categories>
+          
+          <category> 中间件 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> redis </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Docker Desktop(WSL2)修改镜像存储位置</title>
       <link href="/2021/10/24/windows-wsl-partition/"/>
       <url>/2021/10/24/windows-wsl-partition/</url>

@@ -6,7 +6,7 @@
   <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
   
   <link href="https://nicholas2015.github.io/"/>
-  <updated>2021-10-24T11:42:18.879Z</updated>
+  <updated>2021-11-08T13:00:27.872Z</updated>
   <id>https://nicholas2015.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Redis基础</title>
+    <link href="https://nicholas2015.github.io/2021/11/08/redis/"/>
+    <id>https://nicholas2015.github.io/2021/11/08/redis/</id>
+    <published>2021-11-08T12:37:00.000Z</published>
+    <updated>2021-11-08T13:00:27.872Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Redis基础&quot;&gt;&lt;a href=&quot;#Redis基础&quot; class=&quot;headerlink&quot; title=&quot;Redis基础&quot;&gt;&lt;/a&gt;Redis基础&lt;/h2&gt;&lt;p&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="中间件" scheme="https://nicholas2015.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"/>
+    
+    
+    <category term="redis" scheme="https://nicholas2015.github.io/tags/redis/"/>
+    
+  </entry>
   
   <entry>
     <title>Docker Desktop(WSL2)修改镜像存储位置</title>

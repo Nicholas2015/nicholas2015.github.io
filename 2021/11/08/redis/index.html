@@ -513,8 +513,14 @@
 <li>缓存，存储session</li>
 <li>分布式锁，单线程</li>
 <li>计数器，分布式ID</li>
-<li>问题：死锁（锁 必须得有 有效期）```java<br>// 伪代码<br> if(set) // 拿到锁<br>{<br>  …. // 系统挂了<br>  // 设置过期时间 该处逻辑不会被执行<br>}</li>
+<li>问题：死锁（锁 必须得有 有效期）</li>
 </ul>
+  <pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// 伪代码</span>
+      <span class="token keyword">if</span><span class="token punctuation">(</span>set<span class="token punctuation">)</span> <span class="token comment">// 拿到锁</span>
+     <span class="token punctuation">{</span>
+       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token comment">// 系统挂了</span>
+       <span class="token comment">// 设置过期时间 该处逻辑不会被执行</span>
+     <span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 </li>
 </ul>
 </li>

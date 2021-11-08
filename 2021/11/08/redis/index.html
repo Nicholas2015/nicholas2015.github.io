@@ -29,9 +29,9 @@
 
     <script src="/libs/jquery/jquery.min.js"></script>
 
-<meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="尼古拉斯的博客" type="application/atom+xml">
-
+<meta name="generator" content="Hexo 5.4.0">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/atom.xml" title="尼古拉斯的博客" type="application/atom+xml">
 </head>
 
 
@@ -464,12 +464,41 @@
                 <h2 id="Redis基础"><a href="#Redis基础" class="headerlink" title="Redis基础"></a>Redis基础</h2><p><a target="_blank" rel="noopener" href="http://redisdoc.com/">Redis学习参考网站</a></p>
 <h4 id="1-数据类型及基本操作指令"><a href="#1-数据类型及基本操作指令" class="headerlink" title="1. 数据类型及基本操作指令"></a>1. 数据类型及基本操作指令</h4><blockquote>
 <ul>
-<li><p>String </p>
+<li>String </li>
+<li>Hash</li>
+<li>List</li>
+<li>Set</li>
+<li>Zset</li>
+</ul>
+</blockquote>
 <ul>
+<li><p>String操作</p>
+<ul>
+<li><p>基础指令</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/set.html">SET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/setnx.html">SETNX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/setex.html">SETEX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/psetex.html">PSETEX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/get.html">GET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/getset.html">GETSET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/strlen.html">STRLEN</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/append.html">APPEND</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/setrange.html">SETRANGE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/getrange.html">GETRANGE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/incr.html">INCR</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/incrby.html">INCRBY</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/incrbyfloat.html">INCRBYFLOAT</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/decr.html">DECR</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/decrby.html">DECRBY</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/mset.html">MSET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/msetnx.html">MSETNX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/string/mget.html">MGET</a></li>
+</ul>
+</li>
 <li><p>incr指令</p>
 <ul>
-<li>用途：分布式ID、计数器</li>
-</ul>
+<li><p>用途：分布式ID、计数器</p>
 </li>
 <li><p>setnx 如果不存在则存入，否则存入失败</p>
 <ul>
@@ -477,36 +506,146 @@
 <li>问题：如果并发了怎么办？不会存在并发，因为命令执行是单线程，只要能保证抢标记</li>
 </ul>
 </li>
+</ul>
+</li>
 <li><p>场景</p>
 <ul>
-<li><p>缓存，存储session</p>
-</li>
-<li><p>分布式锁，单线程</p>
-</li>
-<li><p>计数器，分布式ID</p>
-</li>
-<li><p>问题：死锁（锁 必须得有 有效期）</p>
-<pre class="line-numbers language-java" data-language="java"><code class="language-java"><span class="token comment">// 伪代码</span>
-
-<span class="token keyword">if</span><span class="token punctuation">(</span>set<span class="token punctuation">)</span> <span class="token comment">// 拿到锁</span>
-<span class="token punctuation">{</span>
-   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token comment">// 系统挂了</span>
-
-   <span class="token comment">// 设置过期时间 该处逻辑不会被执行</span>
-<span class="token punctuation">}</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li>缓存，存储session</li>
+<li>分布式锁，单线程</li>
+<li>计数器，分布式ID</li>
+<li>问题：死锁（锁 必须得有 有效期）```java<br>// 伪代码<br> if(set) // 拿到锁<br>{<br>  …. // 系统挂了<br>  // 设置过期时间 该处逻辑不会被执行<br>}</li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p>Hash</p>
-</li>
-<li><p>List</p>
-</li>
-<li><p>Set</p>
-</li>
-<li></li>
+<li><p>Hash操作</p>
+<ul>
+<li><p>基础指令</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hset.html">HSET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hsetnx.html">HSETNX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hget.html">HGET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hexists.html">HEXISTS</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hdel.html">HDEL</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hlen.html">HLEN</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hstrlen.html">HSTRLEN</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hincrby.html">HINCRBY</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hincrbyfloat.html">HINCRBYFLOAT</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hmset.html">HMSET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hmget.html">HMGET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hkeys.html">HKEYS</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hvals.html">HVALS</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hgetall.html">HGETALL</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/hash/hscan.html">HSCAN</a></li>
 </ul>
+</li>
+<li><p>特点：结构型数据，统计数据</p>
+<p>商品 浏览数、下单数</p>
+</li>
+<li><p>场景</p>
+<ul>
+<li><p>购物车</p>
+</li>
+<li><p>可以作为分布式锁，并且可以做的更好</p>
+</li>
+<li><p>能做重入锁，重入：同一个线程能够多次加锁 , 类似大门上锁，上了多把锁，只有自己才有钥匙解锁</p>
+<p>必要因素：1.互斥（key） 2.线程ID（file） 3.重入次数（value）</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>List 操作</p>
+<ul>
+<li>基础指令<ul>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lpush.html">LPUSH</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lpushx.html">LPUSHX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/rpush.html">RPUSH</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/rpushx.html">RPUSHX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lpop.html">LPOP</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/rpop.html">RPOP</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/rpoplpush.html">RPOPLPUSH</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lrem.html">LREM</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/llen.html">LLEN</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lindex.html">LINDEX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/linsert.html">LINSERT</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lset.html">LSET</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/lrange.html">LRANGE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/ltrim.html">LTRIM</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/blpop.html">BLPOP</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/brpop.html">BRPOP</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/list/brpoplpush.html">BRPOPLPUSH</a></li>
+</ul>
+</li>
+<li>特点：有序的、元素可以重复的集合</li>
+<li>场景：消息队列（比如：blpop），不建议使用，作为消息队列没有任何回应，Redis AP模式，数据可靠性不</li>
+</ul>
+<blockquote>
+<p>说明：</p>
+<p>AP模式：优先保证可用性</p>
+<p>CP模式：优先保证数据一致性</p>
+<p>一致性(Consistency) (等同于所有节点访问同一份最新的数据副本)<br>可用性(Availability)(每次请求都能获取到非错的响应——但是不保证获取的数据为最新数据)<br>分区容错性(Partition tolerance)(以实际效果而言，分区相当于对通信的时限要求。系统如果不能在时限内达成数据一致性，就意味着发生了分区的情况，必须就当前操作在C和A之间做出选择)</p>
 </blockquote>
+</li>
+<li><p>Set操作</p>
+<ul>
+<li>基础指令<ul>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sadd.html">SADD</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sismember.html">SISMEMBER</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/spop.html">SPOP</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/srandmember.html">SRANDMEMBER</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/srem.html">SREM</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/smove.html">SMOVE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/scard.html">SCARD</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/smembers.html">SMEMBERS</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sscan.html">SSCAN</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sinter.html">SINTER</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sinterstore.html">SINTERSTORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sunion.html">SUNION</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sunionstore.html">SUNIONSTORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sdiff.html">SDIFF</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/set/sdiffstore.html">SDIFFSTORE</a></li>
+</ul>
+</li>
+<li>特点：无序的、元素不可以重复的集合</li>
+<li>场景：<ul>
+<li>抽奖 随机弹出（移除[SPOP]和不移除奖池[SRANDMEMBER]）</li>
+<li>交集、差集、并集</li>
+<li>点赞</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>ZSet操作</p>
+<ul>
+<li>基础指令<ul>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zadd.html">ZADD</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zscore.html">ZSCORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zincrby.html">ZINCRBY</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zcard.html">ZCARD</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zcount.html">ZCOUNT</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrange.html">ZRANGE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrevrange.html">ZREVRANGE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrangebyscore.html">ZRANGEBYSCORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrevrangebyscore.html">ZREVRANGEBYSCORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrank.html">ZRANK</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrevrank.html">ZREVRANK</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrem.html">ZREM</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zremrangebyrank.html">ZREMRANGEBYRANK</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zremrangebyscore.html">ZREMRANGEBYSCORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zrangebylex.html">ZRANGEBYLEX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zlexcount.html">ZLEXCOUNT</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zremrangebylex.html">ZREMRANGEBYLEX</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zscan.html">ZSCAN</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zunionstore.html">ZUNIONSTORE</a></li>
+<li><a target="_blank" rel="noopener" href="http://redisdoc.com/sorted_set/zinterstore.html">ZINTERSTORE</a></li>
+</ul>
+</li>
+<li>特点：有序的、元素不可以重复的集合</li>
+<li>场景：</li>
+</ul>
+</li>
+</ul>
 
                 
             </div>

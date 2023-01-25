@@ -6,7 +6,7 @@
   <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
   
   <link href="https://nicholas2015.github.io/"/>
-  <updated>2023-01-25T11:58:31.845Z</updated>
+  <updated>2023-01-25T12:00:56.965Z</updated>
   <id>https://nicholas2015.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>elasticsearch集群安装与部署</title>
+    <link href="https://nicholas2015.github.io/2023/01/25/elasticsearch-cluster-install/"/>
+    <id>https://nicholas2015.github.io/2023/01/25/elasticsearch-cluster-install/</id>
+    <published>2023-01-25T12:00:00.000Z</published>
+    <updated>2023-01-25T12:00:56.965Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;Elasticsearch部署&quot;&gt;&lt;a href=&quot;#Elasticsearch部署&quot; class=&quot;headerlink&quot; title=&quot;Elasticsearch部署&quot;&gt;&lt;/a&gt;Elasticsearch部署&lt;/h1&gt;&lt;h3 id=&quot;一、环境准备&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="大数据" scheme="https://nicholas2015.github.io/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+    
+    
+    <category term="elasticsearch" scheme="https://nicholas2015.github.io/tags/elasticsearch/"/>
+    
+  </entry>
   
   <entry>
     <title>kafka集群安装与部署</title>

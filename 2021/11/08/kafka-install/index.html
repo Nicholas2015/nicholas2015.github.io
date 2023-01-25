@@ -4,7 +4,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Docker Desktop(WSL2)修改镜像存储位置, 尼古拉斯的博客">
+    <meta name="keywords" content="kafka集群安装与部署, 尼古拉斯的博客">
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -16,7 +16,7 @@
     <!-- Global site tag (gtag.js) - Google Analytics -->
 
 
-    <title>Docker Desktop(WSL2)修改镜像存储位置 | 尼古拉斯的博客</title>
+    <title>kafka集群安装与部署 | 尼古拉斯的博客</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.css">
@@ -291,12 +291,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/14.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/16.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">Docker Desktop(WSL2)修改镜像存储位置</h1>
+                    <h1 class="description center-align post-title">kafka集群安装与部署</h1>
                 </div>
             </div>
         </div>
@@ -412,8 +412,8 @@
                     
                     <div class="article-tag">
                         
-                            <a href="/tags/docker/">
-                                <span class="chip bg-color">docker</span>
+                            <a href="/tags/kafka/">
+                                <span class="chip bg-color">kafka</span>
                             </a>
                         
                     </div>
@@ -424,8 +424,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/%E8%BF%90%E7%BB%B4/" class="post-category">
-                                运维
+                            <a href="/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/" class="post-category">
+                                中间件
                             </a>
                         
                     </div>
@@ -437,7 +437,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>发布日期:&nbsp;&nbsp;
-                    2021-10-24
+                    2021-11-08
                 </div>
                 
 
@@ -461,30 +461,154 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="Docker-Desktop-WSL2-修改镜像存储位置"><a href="#Docker-Desktop-WSL2-修改镜像存储位置" class="headerlink" title="Docker Desktop(WSL2)修改镜像存储位置"></a>Docker Desktop(WSL2)修改镜像存储位置</h2><p>此处我使用的是WSL2的版本，因此docker desktop在安装的时候创建两个wsl子系统，分别为docker-desktop和docker-desktop-data</p>
-<pre class="line-numbers language-bash" data-language="bash"><code class="language-bash"><span class="token comment"># 查看已创建子系统</span>
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl -l -v --all
-  NAME                   STATE           VERSION
-* docker-desktop         Running         <span class="token number">2</span>
-  docker-desktop-data    Running         <span class="token number">2</span>
-<span class="token comment"># 立即终止所有正在运行的发行版</span>
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --shutdown
-<span class="token comment"># 导出wsl子系统镜像</span>
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --export docker-desktop I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop<span class="token punctuation">\</span>docker-desktop.tar
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --export docker-desktop-data I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop-data<span class="token punctuation">\</span>docker-desktop-data.tar
-<span class="token comment"># 删除现有的wsl子系统</span>
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --unregister docker-desktop
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --unregister docker-desktop-data
-<span class="token comment"># 重新创建wsl子系统</span>
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --import docker-desktop I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop<span class="token punctuation">\</span>docker-desktop.tar --version <span class="token number">2</span>
-C:<span class="token punctuation">\</span>Users<span class="token punctuation">\</span>xxxxx<span class="token operator">&gt;</span>wsl --import docker-desktop-data I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop-data I:<span class="token punctuation">\</span>docker<span class="token punctuation">\</span>wsl<span class="token punctuation">\</span>docker-desktop-data<span class="token punctuation">\</span>docker-desktop-data.tar --version <span class="token number">2</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+                <h2 id="kafka集群安装与部署"><a href="#kafka集群安装与部署" class="headerlink" title="kafka集群安装与部署"></a>kafka集群安装与部署</h2><h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><ol>
+<li><p>物理机配置</p>
+<table>
+<thead>
+<tr>
+<th>数量</th>
+<th>配置</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3</td>
+<td>处理器：4核心<br> 内存：16GB <br>系统盘：100GB</td>
+<td>Linux CentOS 7.5</td>
+<td>192.168.70.130<br>192.168.70.131<br>192.168.70.132</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>hosts文件修改</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 部署zk集群和kafka集群，IP映射
+# 添加IP关系映射 
+$ echo '192.168.70.130 kafka-zk01' &gt;&gt; /etc/hosts
+$ echo '192.168.70.131 kafka-zk02' &gt;&gt; /etc/hosts
+$ echo '192.168.70.132 kafka-zk03' &gt;&gt; /etc/hosts
+# 查看添加映射内容
+$ cat /etc/hosts
+192.168.70.130  kafka-zk01
+192.168.70.131  kafka-zk02
+192.168.70.132  kafka-zk03<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
+<h3 id="二、集群部署"><a href="#二、集群部署" class="headerlink" title="二、集群部署"></a>二、集群部署</h3><ol>
+<li><p>基础环境初始化</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 创建目录用于下载文件，后面文件下载均在此目录下，可以根据自己习惯操作
+$ mkdir -p /home/software
+$ cd /home/software
+# 安装JDK
+# 下载JDK
+$ wget https://download.oracle.com/otn/java/jdk/8u351-b10/10e8cce67c7843478f41411b7003171c/jdk-8u351-linux-x64.tar.gz?AuthParam=1670730205_7f2b9f799e119cf35d27add28a8187cf
+# 解压jdk文件 tar
+$ tar -zxvf jdk-8u351-linux-x64.tar.gz
+# 查看当前机器是否安装过jdk
+$ rpm -qa |grep java
+# 删除以java开头的文件
+$ rpm -e --nodeps java*
+# 删除完毕后可以输入以下命令确认是否还存在，如果提示command找不到，说明移除完成
+$ java -version
+# 配置JDK
+$ vim /etc/profile
+# 在最后一行添加如下内容
+export JAVA_HOME=/home/local/java/jdk1.8.0_271
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+# 保存内容
+按下esc键，操作:wq保存文件内容
+# 重新加载文件，使其生效
+$ source /etc/profile
+# 验证安装是否成功，如果命令正常说明已经成功
+$ java -version 
+# 创建kafka集群部署目录
+$ mkdir /opt/kafka<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+<li><p>安装Zookeeper</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 下载zookeeper
+$ wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.0/apache-zookeeper-3.8.0-bin.tar.gz
+# 解压zookeeper
+$ tar -xvzf apache-zookeeper-3.8.0-bin.tar.gz
+# 将zookeeper移动到刚刚创建的目录/opt/kafka
+$ mv ./apache-zookeeper-3.8.0-bin /opt/kafka/zookeeper-3.8.0
+# 创建数据目录
+$ mkdir /opt/kafka/zookeeper-data
+# 创建myid文件
+$ touch  /opt/kafka/zookeeper-data/myid
+# 数据目录写入zookeeper的ID，如果是第一台机器则在这里写1，后续机器依次按顺序写入2...
+echo "1" &gt; /opt/kafka/zookeeper-data/myid
+# 查看myid文件中的数据
+cat /opt/kafka/zookeeper-data/myid
+1
+# 进入zookeeper配置文件所在目录
+$ cd /opt/kafka/zookeeper-3.8.0/conf
+$ cp zoo_sample.cfg zoo.cfg
+# 修改zoo.cfg配置文件
+# 修改dataDir的配置，将其设置为zk的数据地址
+dataDir=/opt/kafka/zookeeper-data
+# 增加ZK集群之间的交互配置。此处server.1后⾯的1，必须要和myid中的输⼊数字对应上。
+server.1=kafka-zk01:2888:3888
+server.2=kafka-zk02:2888:3888
+server.3=kafka-zk03:2888:3888
+# 进入zookeeper的bin目录
+$ cd /opt/kafka/zookeeper-3.8.0/bin
+# 启动命令
+$ ./zkServer.sh start
+# 停止命令
+$ ./zkServer.sh stop
+# 查看状态命令,会看到如下内容
+$ ./zkServer.sh status
+ZooKeeper JMX enabled by default
+Using config: /opt/kafka/zookeeper-3.8.0/bin/../conf/zoo.cfg
+Mode: leader<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
 
 <blockquote>
-<p>说明（这两个wsl子系统默认存放在系统盘）：</p>
-<p>默认存储位置：C:\Users\xxxxx\AppData\Local\Docker\wsl</p>
-<p>docker-desktop：存放程序</p>
-<p>docker-desktop-data：存放镜像</p>
+<p>备注：此处为集群部署，重复以上步骤，注意myid文件的修改</p>
 </blockquote>
+</li>
+<li><p>安装Kafka</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 下载kafka
+$ wget https://downloads.apache.org/kafka/3.3.1/kafka_2.12-3.3.1.tgz
+# 解压kafka
+$ tar -xzf kafka_2.12-3.3.1.tgz
+# 将kafka移动到刚刚创建的目录/opt/kafka
+$ mv ./kafka_2.12-3.3.1 /opt/kafka/kafka_2.12-3.3.1
+# 创建数据目录
+$ mkdir /opt/kafka/kafka-data
+# 进入kafka的配置文件所在目录
+$ cd /opt/kafka/kafka_2.12-3.3.1/config
+# 修改server.properties文件
+# 第⼀台机器设置为1，第⼆台设置为2，依次类推
+broker.id=1 
+# 允许删除Topic
+delete.topic.enable=true 
+# 允许⾃动创建Topic，如果没有部署Kafka管控平台，那么建议开启Topic的⾃动创建以省略单独⼿动创建Topic的麻烦过程
+auto.create.topics.enable=true 
+# 该机器的服务地址,即当前服务器地址
+listeners=PLAINTEXT://kafka-zk01:9092 
+# 数据⽬录，可⾃定义修改
+log.dirs=/home/kafka/kafka-data 
+# 如果开启了Topic⾃动创建，同时机器&gt;=3台，那么分区数建议默认3个，副本建议2个，以保证可靠性
+num.partitions=3
+default.replication.factor=2
+# zookeeper集群地址 后⾯/kafka_3_4_1 标识的是Zookeeper中的下⼀层⽬录kafka_3_4_1作为kafka的元信息存储地
+zookeeper.connect=kafka-zk01:2181,kafka-zk02:2181,kafka-zk03:2181/kafka_3_4_1
+# 进入kafka的bin目录
+$ cd /opt/kafka/kafka_2.12-3.3.1/bin
+# 启动命令
+$ nohup ./kafka-server-start.sh ../config/server.properties &gt; /dev/null 2&gt;&amp;1 &amp;
+# 检查是否正常启动，通过检查../logs/server.log⾥⾯是否有started⽇志，如果有的话，那么就启动成功了<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<blockquote>
+<p>备注：此处为集群部署，重复以上步骤，注意配置文件中的broker.id以及listeners需要调整</p>
+</blockquote>
+</li>
+<li><p>验证</p>
+<pre class="line-numbers language-shell" data-language="shell"><code class="language-shell"># 进入kafka的bin目录
+$ cd /opt/kafka/kafka_2.12-3.3.1/bin
+# 生产消息测试
+$ ./kafka-console-producer.sh --bootstrap-server kafka-zk01:9092,kafka-zk02:9092,kafka-zk03:9092 --topic test
+# 消费消息测试
+$ ./kafka-console-consumer.sh --bootstrap-server kafka-zk01:9092,kafka-zk02:9092,kafka-zk03:9092 --topic test --group consume_test --property enable.auto.commit=true<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre></li>
+</ol>
 
                 
             </div>
@@ -511,7 +635,7 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/">https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/</a>
+                    <a href="https://nicholas2015.github.io/2021/11/08/kafka-install/">https://nicholas2015.github.io/2021/11/08/kafka-install/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -549,8 +673,8 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
                     
                         <div class="article-tag">
                             
-                                <a href="/tags/docker/">
-                                    <span class="chip bg-color">docker</span>
+                                <a href="/tags/kafka/">
+                                    <span class="chip bg-color">kafka</span>
                                 </a>
                             
                         </div>
@@ -726,13 +850,13 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;上一篇</div>
             <div class="card">
-                <a href="/2021/11/08/kafka-install/">
+                <a href="/2021/11/08/redis/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/16.jpg" class="responsive-img" alt="kafka集群安装与部署">
+                        <img src="/medias/featureimages/23.jpg" class="responsive-img" alt="Redis基础">
                         
-                        <span class="card-title">kafka集群安装与部署</span>
+                        <span class="card-title">Redis基础</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -760,8 +884,8 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/kafka/">
-                        <span class="chip bg-color">kafka</span>
+                    <a href="/tags/redis/">
+                        <span class="chip bg-color">redis</span>
                     </a>
                     
                 </div>
@@ -775,13 +899,13 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
                 下一篇&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2021/06/26/docker-redis-cluster/">
+                <a href="/2021/10/24/windows-wsl-partition/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="基于Docker的Redis集群搭建">
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Docker Desktop(WSL2)修改镜像存储位置">
                         
-                        <span class="card-title">基于Docker的Redis集群搭建</span>
+                        <span class="card-title">Docker Desktop(WSL2)修改镜像存储位置</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -792,7 +916,7 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2021-06-26
+                                <i class="far fa-clock fa-fw icon-date"></i>2021-10-24
                             </span>
                         <span class="publish-author">
                             
@@ -809,8 +933,8 @@ C:<span class="token punctuation">\</span>Users<span class="token punctuation">\
                 
                 <div class="card-action article-tags">
                     
-                    <a href="/tags/redis/">
-                        <span class="chip bg-color">redis</span>
+                    <a href="/tags/docker/">
+                        <span class="chip bg-color">docker</span>
                     </a>
                     
                 </div>

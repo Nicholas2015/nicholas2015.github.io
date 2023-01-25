@@ -42,6 +42,31 @@
   </entry>
   
   <entry>
+    <title>kafka集群安装与部署</title>
+    <link href="https://nicholas2015.github.io/2021/11/08/kafka-install/"/>
+    <id>https://nicholas2015.github.io/2021/11/08/kafka-install/</id>
+    <published>2021-11-08T12:37:00.000Z</published>
+    <updated>2023-01-25T11:55:31.168Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;kafka集群安装与部署&quot;&gt;&lt;a href=&quot;#kafka集群安装与部署&quot; class=&quot;headerlink&quot; title=&quot;kafka集群安装与部署&quot;&gt;&lt;/a&gt;kafka集群安装与部署&lt;/h2&gt;&lt;h3 id=&quot;一、环境准备&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="中间件" scheme="https://nicholas2015.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"/>
+    
+    
+    <category term="kafka" scheme="https://nicholas2015.github.io/tags/kafka/"/>
+    
+  </entry>
+  
+  <entry>
     <title>Docker Desktop(WSL2)修改镜像存储位置</title>
     <link href="https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/"/>
     <id>https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/</id>

@@ -6,7 +6,7 @@
   <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
   
   <link href="https://nicholas2015.github.io/"/>
-  <updated>2023-01-25T12:00:56.965Z</updated>
+  <updated>2023-01-25T12:03:10.477Z</updated>
   <id>https://nicholas2015.github.io/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://nicholas2015.github.io/2023/01/25/elasticsearch-cluster-install/"/>
     <id>https://nicholas2015.github.io/2023/01/25/elasticsearch-cluster-install/</id>
     <published>2023-01-25T12:00:00.000Z</published>
-    <updated>2023-01-25T12:00:56.965Z</updated>
+    <updated>2023-01-25T12:03:10.477Z</updated>
     
     
       
@@ -46,7 +46,7 @@
     <link href="https://nicholas2015.github.io/2023/01/25/kafka-install/"/>
     <id>https://nicholas2015.github.io/2023/01/25/kafka-install/</id>
     <published>2023-01-25T11:37:00.000Z</published>
-    <updated>2023-01-25T11:58:31.845Z</updated>
+    <updated>2023-01-25T11:59:18.652Z</updated>
     
     
       
@@ -239,6 +239,32 @@
     
     
     <category term="test" scheme="https://nicholas2015.github.io/tags/test/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>java拷贝技术探究</title>
+    <link href="https://nicholas2015.github.io/2014/06/26/java-clone/"/>
+    <id>https://nicholas2015.github.io/2014/06/26/java-clone/</id>
+    <published>2014-06-26T12:37:00.000Z</published>
+    <updated>2023-01-30T13:46:52.965Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h4 id=&quot;浅拷贝和深拷贝的区别&quot;&gt;&lt;a href=&quot;#浅拷贝和深拷贝的区别&quot; class=&quot;headerlink&quot; title=&quot;浅拷贝和深拷贝的区别&quot;&gt;&lt;/a&gt;浅拷贝和深拷贝的区别&lt;/h4&gt;&lt;blockquote&gt;
+&lt;p&gt;浅拷贝：</summary>
+        
+      
+    
+    
+    
+    <category term="JAVA基础" scheme="https://nicholas2015.github.io/categories/JAVA%E5%9F%BA%E7%A1%80/"/>
+    
+    
+    <category term="java" scheme="https://nicholas2015.github.io/tags/java/"/>
     
   </entry>
   

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>白云阁</title>
+  
+  <subtitle>永不言弃</subtitle>
+  <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://nicholas2015.github.io/"/>
+  <updated>2025-02-15T12:34:11.130Z</updated>
+  <id>https://nicholas2015.github.io/</id>
+  
+  <author>
+    <name>会编程的吕洞宾</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>LLM模型</title>
+    <link href="https://nicholas2015.github.io/2025/02/15/llm-model-basic-introduction/"/>
+    <id>https://nicholas2015.github.io/2025/02/15/llm-model-basic-introduction/</id>
+    <published>2025-02-15T12:30:00.000Z</published>
+    <updated>2025-02-15T12:34:11.130Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;模型基础应用知识&quot;&gt;&lt;a href=&quot;#模型基础应用知识&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="AI" scheme="https://nicholas2015.github.io/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://nicholas2015.github.io/tags/AI/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>elasticsearch集群安装与部署</title>
+    <link href="https://nicholas2015.github.io/2023/01/25/elasticsearch-cluster-install/"/>
+    <id>https://nicholas2015.github.io/2023/01/25/elasticsearch-cluster-install/</id>
+    <published>2023-01-25T12:00:00.000Z</published>
+    <updated>2023-01-25T12:03:10.477Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;Elasticsearch部署&quot;&gt;&lt;a href=&quot;#Elasticsearch部署&quot; class=&quot;headerlink&quot; title=&quot;Elasticsearch部署&quot;&gt;&lt;/a&gt;Elasticsearch部署&lt;/h1&gt;&lt;h3 id=&quot;一、环境准备&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="大数据" scheme="https://nicholas2015.github.io/categories/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
+    
+    
+    <category term="elasticsearch" scheme="https://nicholas2015.github.io/tags/elasticsearch/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>kafka集群安装与部署</title>
+    <link href="https://nicholas2015.github.io/2023/01/25/kafka-install/"/>
+    <id>https://nicholas2015.github.io/2023/01/25/kafka-install/</id>
+    <published>2023-01-25T11:37:00.000Z</published>
+    <updated>2023-01-25T11:59:18.652Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;kafka集群安装与部署&quot;&gt;&lt;a href=&quot;#kafka集群安装与部署&quot; class=&quot;headerlink&quot; title=&quot;kafka集群安装与部署&quot;&gt;&lt;/a&gt;kafka集群安装与部署&lt;/h2&gt;&lt;h3 id=&quot;一、环境准备&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="中间件" scheme="https://nicholas2015.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"/>
+    
+    
+    <category term="kafka" scheme="https://nicholas2015.github.io/tags/kafka/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Redis基础</title>
+    <link href="https://nicholas2015.github.io/2021/11/08/redis/"/>
+    <id>https://nicholas2015.github.io/2021/11/08/redis/</id>
+    <published>2021-11-08T12:37:00.000Z</published>
+    <updated>2021-11-08T14:00:03.579Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Redis基础&quot;&gt;&lt;a href=&quot;#Redis基础&quot; class=&quot;headerlink&quot; title=&quot;Redis基础&quot;&gt;&lt;/a&gt;Redis基础&lt;/h2&gt;&lt;p&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="中间件" scheme="https://nicholas2015.github.io/categories/%E4%B8%AD%E9%97%B4%E4%BB%B6/"/>
+    
+    
+    <category term="redis" scheme="https://nicholas2015.github.io/tags/redis/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Docker Desktop(WSL2)修改镜像存储位置</title>
+    <link href="https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/"/>
+    <id>https://nicholas2015.github.io/2021/10/24/windows-wsl-partition/</id>
+    <published>2021-10-24T11:41:16.000Z</published>
+    <updated>2021-10-24T11:42:18.879Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Docker-Desktop-WSL2-修改镜像存储位置&quot;&gt;&lt;a href=&quot;#Docker-Desktop-WSL2-修改镜像存储位置&quot; class=&quot;headerlink&quot; title=&quot;Docker</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://nicholas2015.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="docker" scheme="https://nicholas2015.github.io/tags/docker/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>基于Docker的Redis集群搭建</title>
+    <link href="https://nicholas2015.github.io/2021/06/26/docker-redis-cluster/"/>
+    <id>https://nicholas2015.github.io/2021/06/26/docker-redis-cluster/</id>
+    <published>2021-06-26T14:54:00.000Z</published>
+    <updated>2021-06-27T09:25:52.374Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;基于Docker的Redis集群搭建&quot;&gt;&lt;a href=&quot;#基于Docker的Redis集群搭建&quot; class=&quot;headerlink&quot; title=&quot;基于Docker的Redis集群搭建&quot;&gt;&lt;/a&gt;基于Docker的Redis集群搭建&lt;/h2&gt;&lt;h4</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://nicholas2015.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="redis" scheme="https://nicholas2015.github.io/tags/redis/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>git本地项目上传</title>
+    <link href="https://nicholas2015.github.io/2021/06/26/git-local-project-upload/"/>
+    <id>https://nicholas2015.github.io/2021/06/26/git-local-project-upload/</id>
+    <published>2021-06-26T01:15:00.000Z</published>
+    <updated>2021-06-26T01:15:44.915Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;1、（先进入项目文件夹）通过命令 git init 把这个目录变成git可以管理的仓库&lt;/p&gt;
+&lt;pre class=&quot;line-numbers language-bash&quot; data-language=&quot;bash&quot;&gt;&lt;code</summary>
+        
+      
+    
+    
+    
+    <category term="工具" scheme="https://nicholas2015.github.io/categories/%E5%B7%A5%E5%85%B7/"/>
+    
+    
+    <category term="git" scheme="https://nicholas2015.github.io/tags/git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>kubernetes环境搭建</title>
+    <link href="https://nicholas2015.github.io/2021/06/26/kubernetes-install-01/"/>
+    <id>https://nicholas2015.github.io/2021/06/26/kubernetes-install-01/</id>
+    <published>2021-06-26T01:13:00.000Z</published>
+    <updated>2021-06-26T01:14:14.297Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;1-环境搭建前期准备&quot;&gt;&lt;a href=&quot;#1-环境搭建前期准备&quot; class=&quot;headerlink&quot; title=&quot;1. 环境搭建前期准备&quot;&gt;&lt;/a&gt;1. 环境搭建前期准备&lt;/h2&gt;&lt;h3 id=&quot;组件版本&quot;&gt;&lt;a href=&quot;#组件版本&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://nicholas2015.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="kubernetes" scheme="https://nicholas2015.github.io/tags/kubernetes/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>MySQL免安装版部署</title>
+    <link href="https://nicholas2015.github.io/2021/06/22/mysql-install-windows/"/>
+    <id>https://nicholas2015.github.io/2021/06/22/mysql-install-windows/</id>
+    <published>2021-06-22T14:45:16.000Z</published>
+    <updated>2021-06-22T15:39:00.753Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;MySQL免安装版部署（Windows）&quot;&gt;&lt;a href=&quot;#MySQL免安装版部署（Windows）&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="运维" scheme="https://nicholas2015.github.io/categories/%E8%BF%90%E7%BB%B4/"/>
+    
+    
+    <category term="database" scheme="https://nicholas2015.github.io/tags/database/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://nicholas2015.github.io/2021/01/01/hello-world/"/>
+    <id>https://nicholas2015.github.io/2021/01/01/hello-world/</id>
+    <published>2021-01-01T12:00:00.000Z</published>
+    <updated>2021-06-22T15:47:06.961Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt;</summary>
+        
+      
+    
+    
+    
+    <category term="测试" scheme="https://nicholas2015.github.io/categories/%E6%B5%8B%E8%AF%95/"/>
+    
+    
+    <category term="test" scheme="https://nicholas2015.github.io/tags/test/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>java拷贝技术探究</title>
+    <link href="https://nicholas2015.github.io/2014/06/26/java-clone/"/>
+    <id>https://nicholas2015.github.io/2014/06/26/java-clone/</id>
+    <published>2014-06-26T12:37:00.000Z</published>
+    <updated>2023-01-30T13:46:52.965Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h4 id=&quot;浅拷贝和深拷贝的区别&quot;&gt;&lt;a href=&quot;#浅拷贝和深拷贝的区别&quot; class=&quot;headerlink&quot; title=&quot;浅拷贝和深拷贝的区别&quot;&gt;&lt;/a&gt;浅拷贝和深拷贝的区别&lt;/h4&gt;&lt;blockquote&gt;
+&lt;p&gt;浅拷贝：</summary>
+        
+      
+    
+    
+    
+    <category term="JAVA基础" scheme="https://nicholas2015.github.io/categories/JAVA%E5%9F%BA%E7%A1%80/"/>
+    
+    
+    <category term="java" scheme="https://nicholas2015.github.io/tags/java/"/>
+    
+  </entry>
+  
+</feed>

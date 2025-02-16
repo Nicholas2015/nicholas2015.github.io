@@ -6,7 +6,7 @@
   <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
   
   <link href="https://nicholas2015.github.io/"/>
-  <updated>2025-02-15T12:59:28.129Z</updated>
+  <updated>2025-02-16T12:02:59.378Z</updated>
   <id>https://nicholas2015.github.io/</id>
   
   <author>
@@ -15,6 +15,31 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>LM Studio 模型本地化部署</title>
+    <link href="https://nicholas2015.github.io/2025/02/16/lmstudio-local-model-deploy/"/>
+    <id>https://nicholas2015.github.io/2025/02/16/lmstudio-local-model-deploy/</id>
+    <published>2025-02-16T12:30:00.000Z</published>
+    <updated>2025-02-16T12:02:59.378Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;LM-Studio-模型本地化部署&quot;&gt;&lt;a href=&quot;#LM-Studio-模型本地化部署&quot; class=&quot;headerlink&quot; title=&quot;LM Studio 模型本地化部署&quot;&gt;&lt;/a&gt;LM Studio</summary>
+        
+      
+    
+    
+    
+    <category term="AI" scheme="https://nicholas2015.github.io/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://nicholas2015.github.io/tags/AI/"/>
+    
+  </entry>
   
   <entry>
     <title>LLM模型基础应用知识</title>

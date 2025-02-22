@@ -6,7 +6,7 @@
   <link href="https://nicholas2015.github.io/atom.xml" rel="self"/>
   
   <link href="https://nicholas2015.github.io/"/>
-  <updated>2025-02-17T13:35:57.505Z</updated>
+  <updated>2025-02-22T09:50:57.373Z</updated>
   <id>https://nicholas2015.github.io/</id>
   
   <author>
@@ -15,6 +15,57 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Ollama：零代码部署大模型，轻松玩转AI</title>
+    <link href="https://nicholas2015.github.io/2025/02/22/ollama-local-model-deploy/"/>
+    <id>https://nicholas2015.github.io/2025/02/22/ollama-local-model-deploy/</id>
+    <published>2025-02-22T09:30:00.000Z</published>
+    <updated>2025-02-22T09:50:57.373Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h2 id=&quot;Ollama：零代码部署大模型，轻松玩转AI&quot;&gt;&lt;a href=&quot;#Ollama：零代码部署大模型，轻松玩转AI&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="AI" scheme="https://nicholas2015.github.io/categories/AI/"/>
+    
+    
+    <category term="AI" scheme="https://nicholas2015.github.io/tags/AI/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>还在自己辛苦编写分布式 ID 生成工具？这款神器让你瞬间 “真香”！</title>
+    <link href="https://nicholas2015.github.io/2025/02/17/flake-id-generate-with-hazelcast-for-local-or-server/"/>
+    <id>https://nicholas2015.github.io/2025/02/17/flake-id-generate-with-hazelcast-for-local-or-server/</id>
+    <published>2025-02-17T01:15:00.000Z</published>
+    <updated>2025-02-17T14:04:46.602Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;hr&gt;
+&lt;h2 id=&quot;还在自己辛苦编写分布式-ID-生成工具？这款神器让你瞬间-“真香”！&quot;&gt;&lt;a href=&quot;#还在自己辛苦编写分布式-ID-生成工具？这款神器让你瞬间-“真香”！&quot; class=&quot;headerlink&quot; title=&quot;还在自己辛苦编写分布式 ID</summary>
+        
+      
+    
+    
+    
+    <category term="java" scheme="https://nicholas2015.github.io/categories/java/"/>
+    
+    
+    <category term="java" scheme="https://nicholas2015.github.io/tags/java/"/>
+    
+  </entry>
   
   <entry>
     <title>LM Studio模型本地化部署：快速入门指南！</title>

@@ -1,0 +1,170 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../consts';
+
+const nav = [
+  { href: '/archives/', label: '文章', match: ['/archives', '/20', '/categories'] },
+  { href: '/tools/', label: '小工具', match: ['/tools'] },
+  { href: '/tags/', label: '标签', match: ['/tags'] },
+  { href: '/about/', label: '关于', match: ['/about'] },
+];
+
+const path = Astro.url.pathname;
+const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href="/" aria-label={`${SITE.title} 首页`}>
+      <Icon name="cloud" size={22} />
+      <span>{SITE.title}</span>
+    </a>
+    <nav aria-label="主导航">
+      {nav.map((item) => (
+        <a href={item.href} aria-current={isActive(item.match) ? 'page' : undefined}>{item.label}</a>
+      ))}
+    </nav>
+    <div class="actions">
+      <a class="icon-btn hide-sm" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub">
+        <Icon name="github" />
+      </a>
+      <button class="icon-btn theme-toggle" type="button" aria-label="切换深浅色">
+        <Icon name="moon" class="i-moon" />
+        <Icon name="sun" class="i-sun" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: saturate(1.6) blur(14px);
+    -webkit-backdrop-filter: saturate(1.6) blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    height: 60px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  .brand :global(svg) {
+    color: var(--accent);
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    color: var(--text-2);
+    font-size: 14px;
+    white-space: nowrap;
+    transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
+  }
+
+  nav a:hover {
+    color: var(--text);
+  }
+
+  nav a[aria-current='page'] {
+    color: var(--text);
+    background: var(--bg-sunk);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: var(--r-md);
+    background: transparent;
+    color: var(--text-2);
+    cursor: pointer;
+    transition: color 0.15s var(--ease), background-color 0.15s var(--ease);
+  }
+
+  .icon-btn:hover {
+    color: var(--text);
+    background: var(--bg-sunk);
+  }
+
+  .theme-toggle :global(.i-sun) {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .theme-toggle :global(.i-sun) {
+    display: block;
+  }
+
+  :global(:root[data-theme='dark']) .theme-toggle :global(.i-moon) {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .theme-toggle :global(.i-sun) {
+      display: block;
+    }
+    :global(:root:not([data-theme='light'])) .theme-toggle :global(.i-moon) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .bar {
+      gap: 12px;
+    }
+    .brand span {
+      display: none;
+    }
+    nav a {
+      padding: 0 8px;
+    }
+    .hide-sm {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+    const current =
+      root.dataset.theme ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {}
+  });
+</script>

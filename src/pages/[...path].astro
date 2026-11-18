@@ -1,0 +1,301 @@
+---
+// Blog posts keep the Hexo permalink: /:year/:month/:day/:slug/
+import { render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CodeBlocks from '../components/CodeBlocks.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../consts';
+import { excerpt, formatDate, getPosts, postPath, postUrl, type Post } from '../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
+    params: { path: postPath(post) },
+    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+  }));
+}
+
+interface Props {
+  post: Post;
+  newer?: Post;
+  older?: Post;
+}
+
+const { post, newer, older } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, date, updated, category, tags } = post.data;
+const toc = headings.filter((h) => h.depth <= 3);
+const minDepth = 2;
+// Prose at ~400 CJK chars/min; code gets skimmed, roughly 25 lines a minute.
+const body = post.body ?? '';
+const codeLines = [...body.matchAll(/```[\s\S]*?```/g)].reduce((n, m) => n + m[0].split('\n').length - 2, 0);
+const proseChars = body.replace(/```[\s\S]*?```/g, '').replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\s/g, '').length;
+const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
+---
+
+<BaseLayout title={title} description={post.data.description ?? excerpt(post.body, 150)}>
+  <article>
+    <header class="container post-head">
+      <a class="back arrow-link" href="/archives/"><Icon name="arrowLeft" size={16} /> 全部文章</a>
+      <h1 class="rise">{title}</h1>
+      <div class="meta rise rise-2">
+        <span>{SITE.author}</span>
+        <span class="dot" aria-hidden="true"></span>
+        <time class="num" datetime={date.toISOString()}>{formatDate(date)}</time>
+        {updated && (
+          <>
+            <span class="dot" aria-hidden="true"></span>
+            <span>更新于 <span class="num">{formatDate(updated)}</span></span>
+          </>
+        )}
+        <span class="dot" aria-hidden="true"></span>
+        <span>约 {minutes} 分钟</span>
+      </div>
+      <div class="chips rise rise-2">
+        <a class="tag" href={`/categories/${category}/`}>{category}</a>
+        {tags.filter((t) => t !== category).map((tag) => <a class="tag" href={`/tags/${tag}/`}>#{tag}</a>)}
+      </div>
+    </header>
+
+    <div class:list={['container layout', { 'has-toc': toc.length >= 3 }]}>
+      <div class="prose">
+        <Content />
+      </div>
+
+      {toc.length >= 3 && (
+        <aside class="toc" aria-label="目录">
+          <p>目录</p>
+          <ol>
+            {toc.map((h) => (
+              <li style={`--d:${h.depth - minDepth}`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </aside>
+      )}
+    </div>
+
+    <nav class="container pager" aria-label="上一篇和下一篇">
+      {older ? (
+        <a href={postUrl(older)}>
+          <span class="dir"><Icon name="arrowLeft" size={14} /> 上一篇</span>
+          <span class="t">{older.data.title}</span>
+        </a>
+      ) : <span />}
+      {newer && (
+        <a class="next" href={postUrl(newer)}>
+          <span class="dir">下一篇 <Icon name="arrowRight" size={14} /></span>
+          <span class="t">{newer.data.title}</span>
+        </a>
+      )}
+    </nav>
+  </article>
+  <CodeBlocks />
+</BaseLayout>
+
+<script>
+  // Highlight the heading currently in view.
+  const links = new Map(
+    [...document.querySelectorAll<HTMLAnchorElement>('.toc a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]),
+  );
+  if (links.size) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.removeAttribute('aria-current'));
+          links.get(e.target.id)?.setAttribute('aria-current', 'true');
+        }
+      },
+      { rootMargin: '-80px 0px -70% 0px' },
+    );
+    links.forEach((_, id) => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
+  }
+</script>
+
+<style>
+  .post-head {
+    max-width: calc(var(--measure) + var(--gutter) * 2);
+    padding-top: clamp(40px, 7vw, 80px);
+    padding-bottom: clamp(32px, 5vw, 48px);
+  }
+
+  .back {
+    font-size: 14px;
+    color: var(--text-3);
+    transition: color 0.15s var(--ease);
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+
+  h1 {
+    margin-top: 28px;
+    font-size: clamp(2rem, 4.6vw, 2.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    margin-top: 20px;
+    color: var(--text-3);
+    font-size: 14px;
+  }
+
+  .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, var(--measure));
+    justify-content: center;
+    gap: 64px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    max-width: none;
+  }
+
+  /* The TOC sits to the right; offset so the column still lines up with the header. */
+  .layout.has-toc {
+    grid-template-columns: minmax(0, var(--measure)) 15rem;
+    padding-left: calc(15rem + 64px + var(--gutter));
+  }
+
+  .layout .prose {
+    min-width: 0;
+  }
+
+  .toc {
+    position: sticky;
+    top: 92px;
+    align-self: start;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+    font-size: 13px;
+  }
+
+  .toc p {
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--line);
+  }
+
+  .toc li {
+    padding-left: calc(12px + var(--d) * 12px);
+  }
+
+  .toc a {
+    display: block;
+    padding: 4px 0;
+    margin-left: -1px;
+    color: var(--text-3);
+    line-height: 1.5;
+    transition: color 0.15s var(--ease);
+  }
+
+  .toc a:hover,
+  .toc a[aria-current] {
+    color: var(--text);
+  }
+
+  .toc a[aria-current] {
+    font-weight: 500;
+  }
+
+  .toc li:has(a[aria-current]) {
+    box-shadow: inset 1px 0 0 var(--text);
+  }
+
+  .pager {
+    max-width: calc(var(--measure) + var(--gutter) * 2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 72px;
+  }
+
+  .pager a {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 24px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+
+  .pager a:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .pager .dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .pager .t {
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .pager .next {
+    grid-column: 2;
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  @media (max-width: 1340px) {
+    .layout.has-toc {
+      grid-template-columns: minmax(0, var(--measure));
+      padding-left: var(--gutter);
+    }
+    .toc {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .prose {
+      font-size: 16px;
+    }
+    .pager {
+      grid-template-columns: 1fr;
+    }
+    .pager .next {
+      grid-column: 1;
+    }
+  }
+</style>

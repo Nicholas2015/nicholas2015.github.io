@@ -1,0 +1,108 @@
+---
+import { excerpt, formatDate, postUrl, type Post } from '../lib/content';
+
+interface Props {
+  posts: Post[];
+  showExcerpt?: boolean;
+}
+
+const { posts, showExcerpt = true } = Astro.props;
+---
+
+<ul class="post-list">
+  {posts.map((post) => (
+    <li>
+      <a class="row" href={postUrl(post)}>
+        <time class="date num" datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        <div class="main">
+          <h3>
+            {post.data.title}
+            {post.data.draft && <span class="tag draft">草稿</span>}
+          </h3>
+          {showExcerpt && <p>{post.data.description ?? excerpt(post.body, 90)}</p>}
+        </div>
+        <span class="cat">{post.data.category}</span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .post-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr auto;
+    gap: 24px;
+    align-items: baseline;
+    padding: 20px 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .row:hover {
+    background: var(--bg-sunk);
+  }
+
+  .date {
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  p {
+    margin-top: 4px;
+    color: var(--text-3);
+    font-size: 14px;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cat {
+    font-size: 13px;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .draft {
+    height: 20px;
+    font-size: 12px;
+    border-style: dashed;
+  }
+
+  @media (max-width: 640px) {
+    .row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 16px 12px;
+    }
+    .date {
+      order: -1;
+      font-size: 13px;
+    }
+    .cat {
+      display: none;
+    }
+  }
+</style>

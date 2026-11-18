@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+
+<BaseLayout title="页面不存在">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="num">404</h1>
+      <p>这一页飘走了，链接可能已经失效</p>
+      <div class="cta">
+        <a class="btn btn-primary arrow-link" href="/archives/">看看全部文章 <Icon name="arrowRight" size={16} /></a>
+        <a class="btn" href="/">回到首页</a>
+      </div>
+    </header>
+  </div>
+</BaseLayout>
+
+<style>
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+</style>

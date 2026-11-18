@@ -1,0 +1,99 @@
+---
+import Icon from './Icon.astro';
+import { PLATFORM_LABEL, STATUS_LABEL, type Tool } from '../lib/content';
+
+interface Props {
+  tool: Tool;
+}
+
+const { tool } = Astro.props;
+const { name, tagline, status, platforms } = tool.data;
+---
+
+<a class="tool-card" href={`/tools/${tool.id}/`}>
+  <div class="shot" aria-hidden="true">
+    <!-- Screenshot slot, 16:9. Replace with the app's real window capture. -->
+  </div>
+  <div class="body">
+    <div class="top">
+      <h3>{name}</h3>
+      {status !== 'stable' && <span class="tag">{STATUS_LABEL[status]}</span>}
+    </div>
+    <p>{tagline}</p>
+    <div class="foot">
+      <span class="platforms">{platforms.map((p) => PLATFORM_LABEL[p]).join(' · ')}</span>
+      <span class="go arrow-link">了解更多 <Icon name="arrowRight" size={16} /></span>
+    </div>
+  </div>
+</a>
+
+<style>
+  .tool-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    overflow: hidden;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+
+  .tool-card:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .shot {
+    aspect-ratio: 16 / 9;
+    background: var(--bg-sunk);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 24px 24px;
+    flex: 1;
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  p {
+    color: var(--text-2);
+    font-size: 15px;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 14px;
+  }
+
+  .platforms {
+    color: var(--text-3);
+  }
+
+  .go {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .tool-card:hover .go :global(svg) {
+    transform: translateX(2px);
+  }
+</style>

@@ -1,0 +1,495 @@
+/* Latin and digits use Geist; CJK falls through to the platform's own face. */
+@import '@fontsource-variable/geist/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
+
+:root {
+  --bg: #fbfbfc;
+  --bg-sunk: #f3f4f6;
+  --surface: #ffffff;
+  --text: #0e1116;
+  --text-2: #464c55;
+  --text-3: #6b717b;
+  --line: rgba(14, 17, 22, 0.08);
+  --line-strong: rgba(14, 17, 22, 0.14);
+  --accent: #2f5bd3;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(47, 91, 211, 0.08);
+  --code-bg: #f6f7f9;
+  --shadow-sm: 0 1px 2px rgba(14, 17, 22, 0.04), 0 1px 1px rgba(14, 17, 22, 0.03);
+  --shadow-md: 0 1px 2px rgba(14, 17, 22, 0.04), 0 8px 24px -8px rgba(14, 17, 22, 0.1);
+
+  --font: 'Geist Variable', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif;
+  --mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', 'Cascadia Code', Consolas, monospace;
+
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --measure: 42rem;
+  --wide: 72rem;
+  --gutter: clamp(16px, 4vw, 32px);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0b0c0f;
+    --bg-sunk: #111317;
+    --surface: #14161b;
+    --text: #eceef2;
+    --text-2: #b0b5bd;
+    --text-3: #8a9099;
+    --line: rgba(236, 238, 242, 0.08);
+    --line-strong: rgba(236, 238, 242, 0.14);
+    --accent: #8aa8ff;
+    --accent-ink: #0b0c0f;
+    --accent-soft: rgba(138, 168, 255, 0.1);
+    --code-bg: #111317;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #0b0c0f;
+  --bg-sunk: #111317;
+  --surface: #14161b;
+  --text: #eceef2;
+  --text-2: #b0b5bd;
+  --text-3: #8a9099;
+  --line: rgba(236, 238, 242, 0.08);
+  --line-strong: rgba(236, 238, 242, 0.14);
+  --accent: #8aa8ff;
+  --accent-ink: #0b0c0f;
+  --accent-soft: rgba(138, 168, 255, 0.1);
+  --code-bg: #111317;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.7;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+main {
+  flex: 1;
+  width: 100%;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+a.tag:hover {
+  border-color: var(--text-3);
+  color: var(--text);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--text);
+  font: 500 15px/1 var(--font);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.btn:hover {
+  border-color: var(--text-3);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-primary {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--text) 86%, var(--bg));
+  border-color: transparent;
+}
+
+/* Arrow links nudge their arrow, not their layout. */
+.arrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.arrow-link svg {
+  transition: transform 0.15s var(--ease);
+}
+
+.arrow-link:hover svg {
+  transform: translateX(2px);
+}
+
+.arrow-link.back:hover svg {
+  transform: translateX(-2px);
+}
+
+/* Page header used by index pages */
+.page-head {
+  padding: clamp(48px, 9vw, 96px) 0 clamp(32px, 5vw, 48px);
+}
+
+.page-head h1 {
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.page-head p {
+  margin-top: 16px;
+  max-width: 36rem;
+  color: var(--text-2);
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+}
+
+/* Article body */
+.prose {
+  font-size: 17px;
+  line-height: 1.85;
+  color: var(--text);
+  overflow-wrap: break-word;
+}
+
+.prose > * + * {
+  margin-top: 1.1em;
+}
+
+.prose h1,
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2.6em;
+  margin-bottom: -0.2em;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2.2em;
+  margin-bottom: -0.3em;
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: -0.4em;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s var(--ease);
+}
+
+.prose a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+}
+
+.prose li + li {
+  margin-top: 0.35em;
+}
+
+.prose li::marker {
+  color: var(--text-3);
+}
+
+.prose img {
+  display: block;
+  margin: 1.8em auto;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+  background: var(--surface);
+}
+
+.prose blockquote {
+  margin-left: 0;
+  margin-right: 0;
+  padding: 12px 16px;
+  border-radius: var(--r-lg);
+  background: var(--bg-sunk);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+}
+
+.prose blockquote > * + * {
+  margin-top: 0.6em;
+}
+
+.prose code,
+.prose pre code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+
+.prose pre code {
+  font-size: inherit;
+}
+
+.prose :not(pre) > code {
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--bg-sunk);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.prose pre {
+  margin: 0;
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-x: auto;
+  background: var(--code-bg) !important;
+}
+
+.prose table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.prose th,
+.prose td {
+  min-width: 5.5em;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.prose th {
+  font-weight: 600;
+  color: var(--text-2);
+  border-bottom-color: var(--line-strong);
+}
+
+.prose hr {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  margin: 2.5em 0;
+}
+
+/* Code block frame: the site's signature. Used by CodeBlocks.astro and the home step card. */
+.code-frame {
+  position: relative;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--code-bg);
+  overflow: hidden;
+}
+
+.code-frame .code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 8px 0 16px;
+  border-bottom: 1px solid var(--line);
+  font: 400 12px/1 var(--mono);
+  color: var(--text-3);
+  text-transform: lowercase;
+}
+
+.code-frame .copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-3);
+  font: 400 12px/1 var(--font);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.code-frame .copy:hover {
+  background: var(--line);
+  color: var(--text);
+}
+
+.code-frame > pre {
+  margin: 0;
+  padding: 16px 20px;
+  font: 400 14px/1.7 var(--mono);
+  color: var(--text);
+  background: var(--code-bg);
+  overflow-x: auto;
+}
+
+/* The UA stylesheet sets code to `monospace`, which is SimSun on Chinese Windows. */
+.code-frame code {
+  font-family: inherit;
+}
+
+.code-frame .copy[data-done] {
+  color: var(--accent);
+}
+
+/* Shiki: both themes are emitted as CSS variables */
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .astro-code,
+  :root:not([data-theme='light']) .astro-code span {
+    color: var(--shiki-dark);
+  }
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* One entrance, applied by pages that opt in */
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.4s var(--ease) both;
+  }
+  .rise-2 {
+    animation-delay: 0.05s;
+  }
+  .rise-3 {
+    animation-delay: 0.1s;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

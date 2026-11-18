@@ -1,0 +1,56 @@
+---
+// Wraps every rendered <pre> in an article with the code frame (language + copy),
+// and wires copy buttons on frames rendered directly in pages.
+---
+
+<script>
+  const ICON_COPY =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.75 8.75V5.5a1.75 1.75 0 0 1 1.75-1.75h8a1.75 1.75 0 0 1 1.75 1.75v8a1.75 1.75 0 0 1-1.75 1.75h-3.25M5.5 8.75h8a1.75 1.75 0 0 1 1.75 1.75v8a1.75 1.75 0 0 1-1.75 1.75h-8a1.75 1.75 0 0 1-1.75-1.75v-8A1.75 1.75 0 0 1 5.5 8.75Z"/></svg>';
+  const ICON_CHECK =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  const label = (icon: string, text: string) => `${icon}<span>${text}</span>`;
+
+  function wire(btn: HTMLButtonElement, pre: HTMLElement) {
+    btn.innerHTML = label(ICON_COPY, '复制');
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.innerText.replace(/\n$/, ''));
+        btn.dataset.done = '';
+        btn.innerHTML = label(ICON_CHECK, '已复制');
+      } catch {
+        btn.innerHTML = label(ICON_COPY, '复制失败');
+      }
+      setTimeout(() => {
+        delete btn.dataset.done;
+        btn.innerHTML = label(ICON_COPY, '复制');
+      }, 1600);
+    });
+  }
+
+  // Article code blocks rendered from Markdown.
+  for (const pre of document.querySelectorAll<HTMLPreElement>('.prose pre.astro-code')) {
+    if (pre.parentElement?.classList.contains('code-frame')) continue;
+    const lang = pre.dataset.language && pre.dataset.language !== 'plaintext' ? pre.dataset.language : 'text';
+    const frame = document.createElement('div');
+    frame.className = 'code-frame';
+    const bar = document.createElement('div');
+    bar.className = 'code-bar';
+    const name = document.createElement('span');
+    name.textContent = lang;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy';
+    wire(btn, pre);
+    bar.append(name, btn);
+    pre.replaceWith(frame);
+    frame.append(bar, pre);
+  }
+
+  // Frames already rendered in a page, like the home step card.
+  for (const frame of document.querySelectorAll<HTMLElement>('.code-frame[data-static]')) {
+    const btn = frame.querySelector<HTMLButtonElement>('button.copy');
+    const pre = frame.querySelector<HTMLElement>('pre');
+    if (btn && pre) wire(btn, pre);
+  }
+</script>

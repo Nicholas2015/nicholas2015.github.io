@@ -1,0 +1,85 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../consts';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container inner">
+    <div class="who">
+      <a class="brand" href="/"><Icon name="cloud" size={18} />{SITE.title}</a>
+      <p>{SITE.author}的技术笔记 · {SITE.description}</p>
+    </div>
+    <nav class="links" aria-label="页脚导航">
+      <a href="/archives/">文章</a>
+      <a href="/tools/">小工具</a>
+      <a href="/tags/">标签</a>
+      <a href="/about/">关于</a>
+      <a href="/subscribe/">RSS 订阅</a>
+      <a href={SITE.github} target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+  <div class="container legal">
+    <span>© 2014–{year} {SITE.author}</span>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 96px;
+    border-top: 1px solid var(--line);
+    color: var(--text-3);
+    font-size: 14px;
+  }
+
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px 48px;
+    padding-top: 32px;
+    padding-bottom: 24px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .brand :global(svg) {
+    color: var(--accent);
+  }
+
+  .who p {
+    margin-top: 8px;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+
+  .links a {
+    transition: color 0.15s var(--ease);
+  }
+
+  .links a:hover {
+    color: var(--text);
+  }
+
+  .legal {
+    padding-bottom: 32px;
+    font-size: 13px;
+  }
+
+  .legal span {
+    display: block;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+</style>

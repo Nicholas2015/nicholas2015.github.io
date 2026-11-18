@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CodeBlocks from '../components/CodeBlocks.astro';
+import PostList from '../components/PostList.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../consts';
+import { getPosts } from '../lib/content';
+
+const feed = new URL('/rss.xml', Astro.site).href;
+const latest = (await getPosts()).filter((p) => !p.data.draft).slice(0, 5);
+---
+
+<BaseLayout title="订阅" description="用 RSS 阅读器订阅白云阁，有新文章自动推送">
+  <div class="container narrow">
+    <header class="page-head">
+      <h1 class="rise">订阅</h1>
+      <p class="rise rise-2">把下面的地址加到 RSS 阅读器里，有新文章会自动推送给你，不用常来翻</p>
+    </header>
+
+    <div class="code-frame rise rise-3" data-static>
+      <div class="code-bar">
+        <span>rss</span>
+        <button type="button" class="copy" aria-label="复制订阅地址"></button>
+      </div>
+      <pre><code>{feed}</code></pre>
+    </div>
+
+    <ol class="how">
+      <li>
+        <span class="n num">1</span>
+        <div>
+          <p class="t">复制上面的地址</p>
+          <p class="d">点右上角的「复制」</p>
+        </div>
+      </li>
+      <li>
+        <span class="n num">2</span>
+        <div>
+          <p class="t">打开 RSS 阅读器，添加订阅</p>
+          <p class="d">Feedly、Inoreader、NetNewsWire、Folo 都可以，粘贴地址就行</p>
+        </div>
+      </li>
+      <li>
+        <span class="n num">3</span>
+        <div>
+          <p class="t">等新文章推送</p>
+          <p class="d">每篇文章发布后，阅读器里会出现标题和摘要</p>
+        </div>
+      </li>
+    </ol>
+
+    <p class="alt">
+      不用 RSS？也可以在 <a class="link" href={SITE.github} target="_blank" rel="noopener">GitHub</a> 上关注我
+    </p>
+
+    <section class="latest">
+      <h2>最近推送</h2>
+      <PostList posts={latest} showExcerpt={false} />
+      <a class="more arrow-link" href="/archives/">全部文章 <Icon name="arrowRight" size={16} /></a>
+    </section>
+  </div>
+  <CodeBlocks />
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: calc(var(--measure) + var(--gutter) * 2);
+  }
+
+  .how {
+    list-style: none;
+    margin: 40px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 20px;
+  }
+
+  .how li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .how .n {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .how .t {
+    font-weight: 500;
+    line-height: 32px;
+  }
+
+  .how .d {
+    color: var(--text-3);
+    font-size: 14px;
+  }
+
+  .alt {
+    margin-top: 32px;
+    color: var(--text-2);
+    font-size: 15px;
+  }
+
+  .link {
+    color: var(--accent);
+  }
+
+  .latest {
+    margin-top: 64px;
+  }
+
+  .latest h2 {
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+  }
+
+  .more {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .more:hover {
+    color: var(--text);
+  }
+</style>

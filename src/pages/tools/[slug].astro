@@ -1,0 +1,68 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { PLATFORM_LABEL, STATUS_LABEL, formatDate, getTools, type Tool } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const tools = await getTools();
+  return tools.map((tool) => ({ params: { slug: tool.id }, props: { tool } }));
+}
+
+const { tool } = Astro.props as { tool: Tool };
+const { Content } = await render(tool);
+const { name, tagline, date, status, platforms, demo, repo, download } = tool.data;
+const external = (url?: string) => !!url && /^https?:\/\//.test(url);
+---
+
+<BaseLayout title={name} description={tagline}>
+  <div class="container narrow">
+    <header class="page-head">
+      <a class="back arrow-link" href="/tools/"><Icon name="arrowLeft" size={16} /> 全部工具</a>
+      <h1 class="rise">{name}</h1>
+      <p class="rise rise-2">{tagline}</p>
+      <div class="actions rise rise-3">
+        {download && <a class="btn btn-primary" href={download} target="_blank" rel="noopener"><Icon name="download" size={16} /> 下载</a>}
+        {demo && (
+          <a class={download ? 'btn' : 'btn btn-primary'} href={demo} {...(external(demo) && { target: '_blank', rel: 'noopener' })}>在线试用</a>
+        )}
+        {repo && <a class="btn" href={repo} target="_blank" rel="noopener"><Icon name="github" size={16} /> 源码</a>}
+      </div>
+      <p class="facts">
+        {STATUS_LABEL[status]} · {platforms.map((p) => PLATFORM_LABEL[p]).join(' / ')} · 发布于 <span class="num">{formatDate(date)}</span>
+      </p>
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .narrow {
+    max-width: calc(var(--measure) + var(--gutter) * 2);
+  }
+
+  .back {
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  .facts {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--text-3);
+  }
+</style>

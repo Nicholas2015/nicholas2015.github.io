@@ -1,0 +1,407 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { SITE } from '../consts';
+import { countBy, formatDate, getPosts } from '../lib/content';
+
+const posts = (await getPosts()).filter((p) => !p.data.draft);
+const first = posts.at(-1)!;
+const latest = posts[0];
+const allCategories = countBy(posts.map((p) => p.data.category));
+// Show the directions with real weight; one-off categories add noise to the chart.
+const categories = allCategories.filter(([, n]) => n >= 3);
+const others = allCategories.filter(([, n]) => n < 3).reduce((s, [, n]) => s + n, 0);
+const max = categories[0]?.[1] ?? 1;
+const contact = Buffer.from(JSON.stringify({ email: SITE.email, qq: SITE.qq })).toString('base64');
+const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).size;
+---
+
+<BaseLayout title="关于" description={`${SITE.author}，后端开发者。这里是他的技术笔记`}>
+  <div class="container narrow">
+    <header class="page-head">
+      <h1 class="rise">关于</h1>
+      <p class="rise rise-2">{SITE.author} · 后端开发 · {SITE.description}</p>
+    </header>
+
+    <div class="prose">
+      <p>你好，我是{SITE.author}，一名后端开发者，日常写 Java。</p>
+      <p>
+        这里的笔记大多来自真实踩过的坑：中间件集群怎么搭、线上问题怎么查、Spring AI 和 LangChain4j 怎么落地。每篇都尽量写成能照着做的步骤，命令和配置可以直接复制。
+      </p>
+      <p>偶尔也会写点顺手的桌面小工具，放在<a href="/tools/">小工具</a>里。</p>
+    </div>
+
+    <section class="facts" aria-label="写作记录">
+      <div>
+        <p class="v num">{posts.length}</p>
+        <p class="k">篇文章</p>
+      </div>
+      <div>
+        <p class="v num">{years}</p>
+        <p class="k">个年头有更新</p>
+      </div>
+      <div>
+        <p class="v num">{formatDate(first.data.date).slice(0, 4)}</p>
+        <p class="k">写下第一篇</p>
+      </div>
+      <div>
+        <p class="v num">{formatDate(latest.data.date).slice(5)}</p>
+        <p class="k">最近一次更新</p>
+      </div>
+    </section>
+
+    <section class="topics">
+      <h2>写得最多的方向</h2>
+      <ul>
+        {categories.map(([name, n]) => (
+          <li>
+            <a href={`/categories/${name}/`}>
+              <span class="name">{name}</span>
+              <span class="bar" style={`--w:${(n / max) * 100}%`} aria-hidden="true"></span>
+              <span class="count num">{n}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      {others > 0 && <p class="others">另有 <span class="num">{others}</span> 篇在其他分类，<a href="/tags/">查看全部</a></p>}
+    </section>
+
+    <section class="contact">
+      <h2>找到我</h2>
+      <div class="links">
+        <a class="link-row" href={SITE.github} target="_blank" rel="noopener">
+          <Icon name="github" />
+          <span class="t">GitHub</span>
+          <span class="d">{SITE.github.replace('https://', '')}</span>
+          <Icon name="arrowRight" size={16} class="go" />
+        </a>
+        <button type="button" class="link-row copy-row" data-contact={contact} aria-expanded="false" aria-controls="contact-detail">
+          <Icon name="mail" />
+          <span class="t">邮箱 / QQ</span>
+          <span class="d">点击显示</span>
+          <span class="hint" data-hint>显示</span>
+        </button>
+        <div class="contact-detail" id="contact-detail" hidden>
+          <div class="detail-row">
+            <span class="dk">邮箱</span>
+            <a class="dv" data-email></a>
+            <button type="button" class="mini" data-copy-field="email">复制</button>
+          </div>
+          <div class="detail-row">
+            <span class="dk">QQ</span>
+            <span class="dv num" data-qq></span>
+            <button type="button" class="mini" data-copy-field="qq">复制</button>
+          </div>
+        </div>
+        <a class="link-row" href="/subscribe/">
+          <Icon name="rss" />
+          <span class="t">RSS 订阅</span>
+          <span class="d">新文章自动推送到阅读器</span>
+          <Icon name="arrowRight" size={16} class="go" />
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  // Contact details are stored encoded and only written into the page after a click,
+  // so they never appear as plain text in the HTML that crawlers read.
+  const toggle = document.querySelector<HTMLButtonElement>('[data-contact]');
+  const panel = document.getElementById('contact-detail');
+  if (toggle && panel) {
+    const hint = toggle.querySelector('[data-hint]');
+    let values: { email: string; qq: string } | null = null;
+
+    toggle.addEventListener('click', () => {
+      if (!values) {
+        const bytes = Uint8Array.from(atob(toggle.dataset.contact ?? ''), (c) => c.charCodeAt(0));
+        values = JSON.parse(new TextDecoder().decode(bytes));
+        const email = panel.querySelector<HTMLAnchorElement>('[data-email]');
+        const qq = panel.querySelector('[data-qq]');
+        if (email && values) {
+          email.textContent = values.email;
+          email.href = `mailto:${values.email}`;
+        }
+        if (qq && values) qq.textContent = values.qq;
+      }
+      const open = panel.hidden;
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      if (hint) hint.textContent = open ? '收起' : '显示';
+    });
+
+    for (const btn of panel.querySelectorAll<HTMLButtonElement>('[data-copy-field]')) {
+      btn.addEventListener('click', async () => {
+        const field = btn.dataset.copyField as 'email' | 'qq';
+        try {
+          await navigator.clipboard.writeText(values?.[field] ?? '');
+          btn.textContent = '已复制';
+        } catch {
+          btn.textContent = '复制失败';
+        }
+        setTimeout(() => (btn.textContent = '复制'), 1600);
+      });
+    }
+  }
+</script>
+
+<style>
+  .narrow {
+    max-width: calc(var(--measure) + var(--gutter) * 2);
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 48px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+  }
+
+  .facts > div {
+    padding: 20px 24px;
+  }
+
+  .facts > div + div {
+    border-left: 1px solid var(--line);
+  }
+
+  .v {
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .k {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  section h2 {
+    font-size: 1.25rem;
+    margin-bottom: 16px;
+  }
+
+  .topics,
+  .contact {
+    margin-top: 56px;
+  }
+
+  .topics ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .topics a {
+    display: grid;
+    grid-template-columns: 6rem 1fr 3rem;
+    align-items: center;
+    gap: 16px;
+    height: 36px;
+    padding: 0 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    font-size: 15px;
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .topics a:hover {
+    background: var(--bg-sunk);
+  }
+
+  .bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bar::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--w);
+    border-radius: 3px;
+    background: var(--text-3);
+  }
+
+  .topics li:first-child .bar::after {
+    background: var(--accent);
+  }
+
+  .others {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .others a {
+    color: var(--accent);
+  }
+
+  .count {
+    text-align: right;
+    color: var(--text-3);
+    font-size: 14px;
+  }
+
+  .links {
+    display: grid;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .link-row {
+    display: grid;
+    grid-template-columns: 20px auto 1fr 16px;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .link-row + .link-row {
+    border-top: 1px solid var(--line);
+  }
+
+  .copy-row {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .copy-row + .link-row,
+  .link-row + .copy-row {
+    border-top: 1px solid var(--line);
+  }
+
+  .hint {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .copy-row[aria-expanded='true'] .hint {
+    color: var(--accent);
+  }
+
+  .contact-detail {
+    display: grid;
+    gap: 4px;
+    padding: 8px 20px 12px 52px;
+    background: var(--bg-sunk);
+    border-top: 1px solid var(--line);
+  }
+
+  .contact-detail[hidden] {
+    display: none;
+  }
+
+  .detail-row {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .dk {
+    color: var(--text-3);
+  }
+
+  .dv {
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  a.dv:hover {
+    color: var(--accent);
+  }
+
+  .mini {
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--text-2);
+    font: 400 12px/1 var(--font);
+    cursor: pointer;
+    transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+  }
+
+  .mini:hover {
+    border-color: var(--text-3);
+    color: var(--text);
+  }
+
+  .link-row:hover {
+    background: var(--bg-sunk);
+  }
+
+  .link-row :global(svg) {
+    color: var(--text-2);
+  }
+
+  .link-row .t {
+    font-weight: 500;
+  }
+
+  .link-row .d {
+    color: var(--text-3);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .link-row :global(.go) {
+    color: var(--text-3);
+    transition: transform 0.15s var(--ease);
+  }
+
+  .link-row:hover :global(.go) {
+    transform: translateX(2px);
+  }
+
+  .link-row.copy-row {
+    grid-template-columns: 20px auto 1fr auto;
+  }
+
+  @media (max-width: 640px) {
+    .link-row.copy-row {
+      grid-template-columns: 20px auto 1fr auto;
+    }
+    .link-row .d {
+      display: block;
+    }
+    .facts {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .facts > div:nth-child(3) {
+      border-left: 0;
+    }
+    .facts > div:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+    .link-row {
+      grid-template-columns: 20px auto minmax(0, 1fr) 16px;
+      padding: 16px;
+    }
+  }
+</style>

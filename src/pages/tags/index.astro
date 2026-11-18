@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { countBy, getPosts } from '../../lib/content';
+
+const posts = await getPosts();
+const tags = countBy(posts.flatMap((p) => p.data.tags));
+const categories = countBy(posts.map((p) => p.data.category));
+---
+
+<BaseLayout title="标签" description="按分类和标签浏览文章。">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="rise">标签</h1>
+      <p class="rise rise-2">按分类和标签浏览文章</p>
+    </header>
+
+    <section class="group">
+      <h2>分类</h2>
+      <div class="grid">
+        {categories.map(([name, n]) => (
+          <a class="cat" href={`/categories/${name}/`}>
+            <span>{name}</span>
+            <span class="num">{n} 篇</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="group">
+      <h2>标签</h2>
+      <div class="tags">
+        {tags.map(([name, n]) => (
+          <a class="tag" href={`/tags/${name}/`}>#{name}<span class="n num">{n}</span></a>
+        ))}
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .group + .group {
+    margin-top: 56px;
+  }
+
+  h2 {
+    font-size: 15px;
+    color: var(--text-3);
+    font-weight: 400;
+    margin-bottom: 16px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+    gap: 12px;
+  }
+
+  .cat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 20px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-weight: 500;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+
+  .cat:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .cat .num {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  .n {
+    margin-left: 8px;
+    color: var(--text-3);
+  }
+</style>

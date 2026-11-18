@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import { getTools } from '../../lib/content';
+
+const tools = await getTools();
+---
+
+<BaseLayout title="小工具" description="自己写的桌面小工具，免费下载使用">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="rise">小工具</h1>
+      <p class="rise rise-2">平时顺手写的桌面小工具，解决自己遇到的小麻烦，也分享给你</p>
+    </header>
+
+    {tools.length > 0 ? (
+      <div class="tool-grid">
+        {tools.map((tool) => <ToolCard tool={tool} />)}
+      </div>
+    ) : (
+      <div class="empty">
+        <p>第一个工具正在整理中</p>
+        <p class="sub">发布后会出现在这里，也会推送到 <a href="/subscribe/">RSS</a></p>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 16px;
+  }
+
+  .empty {
+    padding: 64px 32px;
+    border-radius: var(--r-xl);
+    border: 1px dashed var(--line-strong);
+    text-align: center;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .empty .sub {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-3);
+  }
+
+  .empty a {
+    color: var(--accent);
+  }
+</style>

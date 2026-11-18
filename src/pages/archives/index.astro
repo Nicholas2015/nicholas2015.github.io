@@ -1,0 +1,259 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { countBy, formatDate, getPosts, postUrl } from '../../lib/content';
+
+const posts = await getPosts();
+const categories = countBy(posts.map((p) => p.data.category));
+// Group by year, then month, so long years stay scannable.
+const byYear = [...Map.groupBy(posts, (p) => formatDate(p.data.date).slice(0, 4))].map(([year, list]) => ({
+  year,
+  count: list.length,
+  months: [...Map.groupBy(list, (p) => formatDate(p.data.date).slice(5, 7))],
+}));
+---
+
+<BaseLayout title="文章" description="全部技术笔记，按时间排列，可按分类筛选">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="rise">文章</h1>
+      <p class="rise rise-2">共 <span class="num" data-total>{posts.length}</span> 篇，按时间排列</p>
+    </header>
+
+    <div class="filter" role="toolbar" aria-label="按分类筛选">
+      <button type="button" class="chip" aria-pressed="true" data-cat="">全部 <span class="num">{posts.length}</span></button>
+      {categories.map(([name, n]) => (
+        <button type="button" class="chip" aria-pressed="false" data-cat={name}>{name} <span class="num">{n}</span></button>
+      ))}
+    </div>
+
+    {byYear.map(({ year, count, months }) => (
+      <section class="year" id={`y${year}`} data-year>
+        <h2 class="num">{year}<span data-count>{count} 篇</span></h2>
+        <div class="months">
+          {months.map(([month, list]) => (
+            <div class="month" data-month>
+              <h3 class="num">{Number(month)} 月</h3>
+              <ul>
+                {list.map((p) => (
+                  <li data-cat={p.data.category}>
+                    <a href={postUrl(p)}>
+                      <span class="d num">{formatDate(p.data.date).slice(5)}</span>
+                      <span class="t">
+                        {p.data.title}
+                        {p.data.draft && <span class="tag draft">草稿</span>}
+                      </span>
+                      <span class="c">{p.data.category}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
+</BaseLayout>
+
+<script>
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.filter .chip')];
+  const total = document.querySelector('[data-total]');
+
+  function apply(cat: string) {
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.cat === cat)));
+    let shown = 0;
+    for (const year of document.querySelectorAll<HTMLElement>('[data-year]')) {
+      let inYear = 0;
+      for (const month of year.querySelectorAll<HTMLElement>('[data-month]')) {
+        let inMonth = 0;
+        for (const li of month.querySelectorAll<HTMLElement>('li[data-cat]')) {
+          const on = !cat || li.dataset.cat === cat;
+          li.hidden = !on;
+          if (on) inMonth++;
+        }
+        month.hidden = inMonth === 0;
+        inYear += inMonth;
+      }
+      year.hidden = inYear === 0;
+      const count = year.querySelector('[data-count]');
+      if (count) count.textContent = `${inYear} 篇`;
+      shown += inYear;
+    }
+    if (total) total.textContent = String(shown);
+  }
+
+  chips.forEach((c) =>
+    c.addEventListener('click', () => {
+      const cat = c.dataset.cat ?? '';
+      apply(cat);
+      const url = new URL(location.href);
+      if (cat) url.searchParams.set('c', cat);
+      else url.searchParams.delete('c');
+      history.replaceState(null, '', url);
+    }),
+  );
+
+  const initial = new URL(location.href).searchParams.get('c');
+  if (initial && chips.some((c) => c.dataset.cat === initial)) apply(initial);
+</script>
+
+<style>
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--text-2);
+    font: 400 14px/1 var(--font);
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
+  }
+
+  .chip .num {
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .chip:hover {
+    border-color: var(--text-3);
+    color: var(--text);
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  .chip[aria-pressed='true'] .num {
+    color: color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+
+  .year {
+    display: grid;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: 32px;
+    padding: 40px 0;
+  }
+
+  .year + .year {
+    border-top: 1px solid var(--line);
+  }
+
+  h2 {
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+    position: sticky;
+    top: 84px;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  h2 span {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-3);
+  }
+
+  .months {
+    display: grid;
+    gap: 32px;
+  }
+
+  .month h3 {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  li a {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: baseline;
+    padding: 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  li a:hover {
+    background: var(--bg-sunk);
+  }
+
+  .d {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .t {
+    font-size: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .c {
+    font-size: 13px;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .draft {
+    height: 20px;
+    font-size: 12px;
+    border-style: dashed;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 720px) {
+    .year {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      padding: 32px 0;
+    }
+    h2 {
+      position: static;
+      flex-direction: row;
+      align-items: baseline;
+      gap: 12px;
+      font-size: 1.5rem;
+    }
+    li a {
+      grid-template-columns: 3rem minmax(0, 1fr);
+    }
+    .c {
+      display: none;
+    }
+  }
+</style>

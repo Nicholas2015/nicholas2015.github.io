@@ -1,8 +1,8 @@
 ---
 title: "Hello World"
 date: 2021-01-01T20:00:00+08:00
-category: "测试"
-tags: ["test"]
+category: "随笔"
+tags: []
 ---
 
 Welcome to [Hexo](https://hexo.io/)! This is your very first post. Check [documentation](https://hexo.io/docs/) for more info. If you get any problems when using Hexo, you can find the answer in [troubleshooting](https://hexo.io/docs/troubleshooting.html) or you can ask me on [GitHub](https://github.com/hexojs/hexo/issues).

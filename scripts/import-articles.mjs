@@ -87,8 +87,8 @@ for (const group of (await readdir(srcDir, { withFileTypes: true })).filter((d) 
     const haystack = `${title} ${name}`;
     const category =
       GROUP_CATEGORY[group] ?? TECH_CATEGORIES.find(([re]) => re.test(haystack))?.[1] ?? 'java';
-    const tags = [...new Set([...(group === 'ai' ? ['AI'] : []), ...TAGS.filter(([re]) => re.test(haystack)).map(([, t]) => t)])];
-    if (!tags.length) tags.push('java');
+    // Tags never repeat the category; an AI post without a finer topic just has no tags.
+    const tags = [...new Set(TAGS.filter(([re]) => re.test(haystack)).map(([, t]) => t))];
 
     // Same-day posts in one folder get a few minutes apart so their order is stable.
     const key = `${group}/${day}`;

@@ -53,6 +53,37 @@ export function countBy(values: string[]) {
   return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN'));
 }
 
+// Tags stay as ASCII slugs in front matter and URLs; readers see these names.
+const TAG_LABEL: Record<string, string> = {
+  rag: 'RAG',
+  'spring-boot': 'Spring Boot',
+  'spring-ai': 'Spring AI',
+  'spring-cloud': 'Spring Cloud',
+  langchain4j: 'LangChain4j',
+  redis: 'Redis',
+  mysql: 'MySQL',
+  mcp: 'MCP',
+  java: 'Java',
+  kafka: 'Kafka',
+  agent: 'Agent',
+  elasticsearch: 'Elasticsearch',
+  jvm: 'JVM',
+  rabbitmq: 'RabbitMQ',
+  rocketmq: 'RocketMQ',
+  'virtual-thread': '虚拟线程',
+  jdk: 'JDK',
+  'distributed-id': '分布式 ID',
+  idempotency: '接口幂等',
+  nginx: 'Nginx',
+  ollama: 'Ollama',
+  git: 'Git',
+  docker: 'Docker',
+  kubernetes: 'Kubernetes',
+  maven: 'Maven',
+};
+
+export const tagLabel = (tag: string) => TAG_LABEL[tag] ?? tag;
+
 export const STATUS_LABEL = { stable: '可用', beta: '测试中', wip: '开发中' } as const;
 
 export const PLATFORM_LABEL = {

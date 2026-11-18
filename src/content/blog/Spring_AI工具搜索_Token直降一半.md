@@ -2,7 +2,7 @@
 title: "Spring AI 工具搜索：Token 直降一半"
 date: 2026-10-17T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai"]
+tags: ["spring-ai"]
 ---
 
 **摘要：** 工具一多，模型每轮请求都要先读一遍全部工具的 JSON Schema，5 万 token 说没就没，检索还容易选错工具。Spring AI 2.0 内置的 Tool Search Tool 改成「按需检索」：模型自己用一句人话搜工具，命中哪几个才把定义塞进上下文。本文讲清原理，附三套可跑代码：属性开关起步、语义向量检索、多租户会话隔离。

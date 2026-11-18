@@ -2,7 +2,7 @@
 title: "Spring AI 结构化输出解析失败？三招兜住"
 date: 2026-11-08T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai"]
+tags: ["spring-ai"]
 ---
 
 **摘要：** 用 Spring AI 的 `.entity()` 拿对象，模型一加解释文字就抛 `Unrecognized token`。本文讲清它背后生成 Schema、拼提示词、反序列化这三步，再给出三层兜底：自纠重试、provider 原生约束、自定义转换器，附完整可运行代码。

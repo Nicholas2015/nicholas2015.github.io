@@ -2,7 +2,7 @@
 title: "大模型JSON总解析失败？Java结构化输出实战"
 date: 2026-10-26T20:00:00+08:00
 category: "AI"
-tags: ["AI"]
+tags: []
 ---
 
 > 客服工单抽取上线一周，日志里全是 JsonParseException。模型有时把 JSON 裹进 Markdown 代码块，有时前面加一句"好的，结果如下"，字段名还能从 orderNo 变成 order_no。加正则、截字符串、改提示词，撑两天又崩。这篇讲清 LangChain4j 的结构化输出：怎么把格式约束落到协议层，怎么补上 schema 管不了的业务校验。代码是完整工程，照抄能跑。

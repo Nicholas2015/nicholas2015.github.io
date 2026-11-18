@@ -2,7 +2,7 @@
 title: "Java多智能体：AgentScope分工实战"
 date: 2026-10-21T20:00:00+08:00
 category: "AI"
-tags: ["AI", "agent"]
+tags: ["agent"]
 ---
 
 **摘要：** 一个 Agent 又查数据又做评审，上下文越塞越脏，结论越来越水。本文用 AgentScope Java 的子 Agent 把任务拆开：讲清 spawn 的调用链、上下文与工具隔离、同步/后台/并行三种跑法，附两个完整可运行示例和踩坑清单。

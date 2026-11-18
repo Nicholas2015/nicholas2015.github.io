@@ -2,7 +2,7 @@
 title: "Spring AI 接 Ollama，本地大模型 RAG 实战"
 date: 2026-10-10T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai", "rag", "ollama"]
+tags: ["spring-ai", "rag", "ollama"]
 ---
 
 > 公司想拿内部文档做问答机器人，可文档里躺着客户名单、报价单和合同条款，一条都不敢往外传。用云上的大模型 API，数据合规这关先过不去；自己从零搭一套，又不知道从哪儿下手。其实这事不用二选一：Ollama 能在一台普通开发机上把开源大模型跑起来，Spring AI 负责把 Java 应用接上去，再配一套本地 Embedding 加向量检索，一套完整的 RAG 就成型了。下面把这条路从头到尾走一遍，代码可直接跑。

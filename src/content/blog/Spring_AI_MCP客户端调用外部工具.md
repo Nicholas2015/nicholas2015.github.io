@@ -2,7 +2,7 @@
 title: "Spring AI MCP 客户端调用外部工具"
 date: 2026-10-03T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai", "mcp"]
+tags: ["spring-ai", "mcp"]
 ---
 
 > 想让 AI 顺手查一下 GitHub issue、读本地某个目录的文件、翻一遍数据库表结构，老办法是自己写一堆 `@Tool` 方法：一个能力一个类，鉴权、超时、分页、错误处理全得自己兜。MCP 协议把这活标准化了——GitHub、文件系统、Postgres 这些能力，已经有人写成了现成的 MCP Server，你接上就能用。Spring AI 的 MCP 客户端，就是 Java 这边的那根插头。这篇文章讲清它怎么工作，再给三个能直接跑的例子。

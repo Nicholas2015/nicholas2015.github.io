@@ -5,7 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
 import { SITE } from '../consts';
-import { excerpt, formatDate, getPosts, postPath, postUrl, type Post } from '../lib/content';
+import { excerpt, formatDate, getPosts, postPath, postUrl, tagLabel, type Post } from '../lib/content';
 
 export async function getStaticPaths() {
   const posts = await getPosts();
@@ -53,7 +53,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
       </div>
       <div class="chips rise rise-2">
         <a class="tag" href={`/categories/${category}/`}>{category}</a>
-        {tags.filter((t) => t !== category).map((tag) => <a class="tag" href={`/tags/${tag}/`}>#{tag}</a>)}
+        {tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tagLabel(tag)}</a>)}
       </div>
     </header>
 

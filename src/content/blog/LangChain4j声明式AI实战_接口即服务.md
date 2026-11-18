@@ -2,7 +2,7 @@
 title: "LangChain4j声明式AI实战：接口即服务"
 date: 2026-10-02T20:00:00+08:00
 category: "AI"
-tags: ["AI", "langchain4j"]
+tags: ["langchain4j"]
 ---
 
 > 用过 LangChain4j 或 Spring AI 的人都有体会：调一次大模型，要手动拼 system prompt、手动塞历史消息、手动解析返回、手动维护会话。一段业务代码里全是字符串模板和 `List<ChatMessage>`，改一句提示词得翻三个文件。LangChain4j 的 AI Service 把这件事反过来了——你只写一个 Java 接口，框架在运行时生成实现，帮你拼 Prompt、管记忆、调工具。这篇文章讲清它背后的原理，再用三个可直接运行的示例带你落地。

@@ -2,7 +2,7 @@
 title: "Spring AI 可观测性实战：监控大模型调用"
 date: 2026-10-07T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai"]
+tags: ["spring-ai"]
 ---
 
 **摘要**：Spring AI 内置 Micrometer 观测能力，不用手写埋点就能拿到大模型调用的耗时、token 用量和链路追踪。本文用 Spring Boot 4.1.1 + Spring AI 2.0.1 搭出一套 Prometheus + Grafana 可观测方案，代码完整可直接跑。

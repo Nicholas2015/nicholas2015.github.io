@@ -2,7 +2,7 @@
 title: "Spring AI Advisors：别再手写RAG和记忆"
 date: 2026-10-06T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai", "rag"]
+tags: ["spring-ai", "rag"]
 ---
 
 *摘要：Spring AI 2.0 的 Advisor 把 RAG 检索、对话记忆、敏感词拦截、Token 成本统计这些"每次都要重复写的代码"变成一条可复用的拦截器链。本文用可运行代码讲清链条原理、order 顺序规则和实战写法。*

@@ -2,7 +2,7 @@
 title: "Java 写 MCP Server：让 Claude 直接调你的接口"
 date: 2026-10-27T20:00:00+08:00
 category: "AI"
-tags: ["AI", "mcp"]
+tags: ["mcp"]
 ---
 
 > 运维同事想在 Claude 里查一笔订单，只能把订单号复制进对话框，等模型回一句"我看不到你的数据库"，再手动贴日志。公司内部系统几十个，每接一个 AI 客户端就得重写一遍适配。这篇讲怎么用 Spring AI 写一个 MCP Server，把 Java 接口变成 Claude、Cursor 能直接调用的工具，客户端零改造。代码是完整工程，跑通它连大模型 API Key 都不需要。

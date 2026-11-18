@@ -2,7 +2,7 @@
 title: "Spring AI 记忆总丢？Advisor 链来治"
 date: 2026-10-30T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai"]
+tags: ["spring-ai"]
 ---
 
 > 用 Spring AI 写多轮对话，十有八九栽在同一件事上：历史消息全靠自己拼。第一版能跑，第二版开始到处 `if`，第三版发现两个用户串了台。这篇讲清楚 Advisor 链是怎么回事——它是 Spring AI 里统一处理记忆、日志、RAG、内容过滤的插槽机制。看完你能把散落在 Service 里的历史拼接代码全删掉，换成一个可复用、可排序、流式也不掉链子的拦截链。

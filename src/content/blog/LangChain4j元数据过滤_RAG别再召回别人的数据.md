@@ -2,7 +2,7 @@
 title: "LangChain4j元数据过滤：RAG别再召回别人的数据"
 date: 2026-10-15T20:00:00+08:00
 category: "AI"
-tags: ["AI", "langchain4j", "rag"]
+tags: ["langchain4j", "rag"]
 ---
 
 **摘要：** RAG 只比相似度，不认数据归属，多租户知识库很容易把客户 B 的文档塞进客户 A 的上下文。本文用 LangChain4j 的元数据过滤，把「只看该看的数据」落到检索这一层，讲清过滤发生在链路的哪一步、动态过滤怎么接 InvocationParameters，附三个完整可运行示例和踩坑清单。

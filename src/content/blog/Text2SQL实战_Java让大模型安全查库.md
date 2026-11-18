@@ -2,7 +2,7 @@
 title: "Text2SQL 实战：Java 让大模型安全查库"
 date: 2026-10-19T20:00:00+08:00
 category: "AI"
-tags: ["AI", "mysql"]
+tags: ["mysql"]
 ---
 
 **摘要：** Text2SQL 不是一句 prompt 就完事。本文用 Spring AI 搭一条完整链路：把表结构喂给模型、生成 SQL、做安全校验、执行，再把数据库报错回灌给模型重试。附只读账号、超时、行数限制和选型建议。

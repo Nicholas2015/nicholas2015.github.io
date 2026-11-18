@@ -2,7 +2,7 @@
 title: "Spring AI 接 MCP：一个 Java 服务连多个 Server"
 date: 2026-10-22T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai", "mcp"]
+tags: ["spring-ai", "mcp"]
 ---
 
 *摘要：Spring AI 的 MCP 客户端怎么用？本文用一个 Java 服务同时接入文档、CRM、文件系统三个 MCP Server，讲清工具发现、重名冲突、白名单过滤、缓存刷新和超时处理，代码可直接运行。*

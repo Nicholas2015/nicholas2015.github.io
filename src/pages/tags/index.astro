@@ -1,87 +1,148 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { countBy, getPosts } from '../../lib/content';
+import { countBy, getPosts, postUrl, tagLabel } from '../../lib/content';
 
-const posts = await getPosts();
-const tags = countBy(posts.flatMap((p) => p.data.tags));
+const posts = (await getPosts()).filter((p) => !p.data.draft);
 const categories = countBy(posts.map((p) => p.data.category));
+const max = categories[0]?.[1] ?? 1;
+const latestIn = (cat: string) => posts.find((p) => p.data.category === cat);
+const tags = countBy(posts.flatMap((p) => p.data.tags));
 ---
 
-<BaseLayout title="标签" description="按分类和标签浏览文章。">
+<BaseLayout title="标签" description="按分类和标签浏览文章">
   <div class="container">
     <header class="page-head">
       <h1 class="rise">标签</h1>
-      <p class="rise rise-2">按分类和标签浏览文章</p>
+      <p class="rise rise-2"><span class="num">{categories.length}</span> 个分类，<span class="num">{tags.length}</span> 个标签</p>
     </header>
 
-    <section class="group">
-      <h2>分类</h2>
-      <div class="grid">
-        {categories.map(([name, n]) => (
-          <a class="cat" href={`/categories/${name}/`}>
-            <span>{name}</span>
-            <span class="num">{n} 篇</span>
-          </a>
-        ))}
-      </div>
-    </section>
+    <div class="layout">
+      <section>
+        <h2>分类</h2>
+        <ul class="cats">
+          {categories.map(([name, n]) => {
+            const latest = latestIn(name);
+            return (
+              <li>
+                <a class="cat" href={`/categories/${name}/`}>
+                  <span class="name">{name}</span>
+                  <span class="bar" style={`--w:${(n / max) * 100}%`} aria-hidden="true"></span>
+                  <span class="n num">{n} 篇</span>
+                </a>
+                {latest && (
+                  <a class="latest" href={postUrl(latest)}>最近：{latest.data.title}</a>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
-    <section class="group">
-      <h2>标签</h2>
-      <div class="tags">
-        {tags.map(([name, n]) => (
-          <a class="tag" href={`/tags/${name}/`}>#{name}<span class="n num">{n}</span></a>
-        ))}
-      </div>
-    </section>
+      <section>
+        <h2>标签</h2>
+        <div class="tags">
+          {tags.map(([name, n]) => (
+            <a class="tag" href={`/tags/${name}/`}>{tagLabel(name)}<span class="c num">{n}</span></a>
+          ))}
+        </div>
+      </section>
+    </div>
   </div>
 </BaseLayout>
 
 <style>
-  .group + .group {
-    margin-top: 56px;
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 64px;
+    align-items: start;
   }
 
   h2 {
-    font-size: 15px;
-    color: var(--text-3);
+    font-size: 14px;
     font-weight: 400;
-    margin-bottom: 16px;
+    color: var(--text-3);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
   }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
-    gap: 12px;
+  .cats {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cats li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
   }
 
   .cat {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 20px;
-    border-radius: var(--r-lg);
-    border: 1px solid var(--line);
-    background: var(--surface);
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr) 4rem;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .name {
+    font-size: 16px;
     font-weight: 500;
-    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+    transition: color 0.15s var(--ease);
   }
 
-  .cat:hover {
-    border-color: var(--line-strong);
-    box-shadow: var(--shadow-md);
+  .cat:hover .name {
+    color: var(--accent);
   }
 
-  .cat .num {
+  .bar {
+    position: relative;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .bar::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--w);
+    border-radius: 2px;
+    background: var(--text-3);
+  }
+
+  .cats li:first-child .bar::after {
+    background: var(--accent);
+  }
+
+  .n {
+    text-align: right;
     font-size: 13px;
-    font-weight: 400;
     color: var(--text-3);
+  }
+
+  .latest {
+    display: block;
+    margin-top: 4px;
+    padding-left: calc(6rem + 16px);
+    padding-right: calc(4rem + 16px);
+    font-size: 13px;
+    color: var(--text-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s var(--ease);
+  }
+
+  .latest:hover {
+    color: var(--text);
   }
 
   .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    padding-top: 16px;
   }
 
   .tag {
@@ -90,8 +151,25 @@ const categories = countBy(posts.map((p) => p.data.category));
     font-size: 14px;
   }
 
-  .n {
+  .c {
     margin-left: 8px;
     color: var(--text-3);
+  }
+
+  @media (max-width: 860px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 48px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .cat {
+      grid-template-columns: 5rem minmax(0, 1fr) 3.5rem;
+      gap: 12px;
+    }
+    .latest {
+      padding-left: 0;
+    }
   }
 </style>

@@ -2,7 +2,7 @@
 title: "RAG 答不准先别换模型：Java 文档切块实战"
 date: 2026-10-29T20:00:00+08:00
 category: "AI"
-tags: ["AI", "rag"]
+tags: ["rag"]
 ---
 
 **摘要：** RAG 答不准，多半不是模型不行，是文档切块这一步坏了。本文用 Spring AI 的 TikaDocumentReader 和 TokenTextSplitter，讲清 chunk 的 token 语义和每个参数的真实作用，再给三个能直接跑的例子：单文件块体检、带重叠和元数据的切块器、Spring Boot 上传入库。附源码级参数坑。

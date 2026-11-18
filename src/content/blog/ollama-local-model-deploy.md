@@ -2,7 +2,7 @@
 title: "Ollama：零代码部署大模型，轻松玩转AI"
 date: 2025-02-22T17:30:00+08:00
 category: "AI"
-tags: ["AI"]
+tags: []
 ---
 
 ## 一、Ollama下载和安装

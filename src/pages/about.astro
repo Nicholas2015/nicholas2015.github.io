@@ -12,7 +12,7 @@ const allCategories = countBy(posts.map((p) => p.data.category));
 const categories = allCategories.filter(([, n]) => n >= 3);
 const others = allCategories.filter(([, n]) => n < 3).reduce((s, [, n]) => s + n, 0);
 const max = categories[0]?.[1] ?? 1;
-const contact = Buffer.from(JSON.stringify({ email: SITE.email, qq: SITE.qq })).toString('base64');
+const contact = SITE.contact;
 const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).size;
 ---
 
@@ -68,37 +68,28 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
 
     <section class="contact">
       <h2>找到我</h2>
-      <div class="links">
-        <a class="link-row" href={SITE.github} target="_blank" rel="noopener">
-          <Icon name="github" />
-          <span class="t">GitHub</span>
-          <span class="d">{SITE.github.replace('https://', '')}</span>
-          <Icon name="arrowRight" size={16} class="go" />
+      <div class="socials" data-contact={contact}>
+        <a class="social" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+          <Icon name="github" size={20} />
         </a>
-        <button type="button" class="link-row copy-row" data-contact={contact} aria-expanded="false" aria-controls="contact-detail">
-          <Icon name="mail" />
-          <span class="t">邮箱 / QQ</span>
-          <span class="d">点击显示</span>
-          <span class="hint" data-hint>显示</span>
+        <button type="button" class="social" data-reveal="email" aria-label="邮箱" title="邮箱" aria-expanded="false">
+          <Icon name="mail" size={20} />
         </button>
-        <div class="contact-detail" id="contact-detail" hidden>
-          <div class="detail-row">
-            <span class="dk">邮箱</span>
-            <a class="dv" data-email></a>
-            <button type="button" class="mini" data-copy-field="email">复制</button>
-          </div>
-          <div class="detail-row">
-            <span class="dk">QQ</span>
-            <span class="dv num" data-qq></span>
-            <button type="button" class="mini" data-copy-field="qq">复制</button>
+        <button type="button" class="social" data-reveal="qq" aria-label="QQ" title="QQ" aria-expanded="false">
+          <Icon name="qq" size={20} />
+        </button>
+        <a class="social" href="/subscribe/" aria-label="RSS 订阅" title="RSS 订阅">
+          <Icon name="rssSolid" size={18} />
+        </a>
+
+        <div class="pop" role="dialog" aria-label="联系方式" hidden>
+          <span class="pk" data-pop-label></span>
+          <span class="pv num" data-pop-value></span>
+          <div class="pa">
+            <a class="mini" data-pop-mail>写邮件</a>
+            <button type="button" class="mini" data-pop-copy>复制</button>
           </div>
         </div>
-        <a class="link-row" href="/subscribe/">
-          <Icon name="rss" />
-          <span class="t">RSS 订阅</span>
-          <span class="d">新文章自动推送到阅读器</span>
-          <Icon name="arrowRight" size={16} class="go" />
-        </a>
       </div>
     </section>
   </div>
@@ -107,42 +98,70 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
 <script>
   // Contact details are stored encoded and only written into the page after a click,
   // so they never appear as plain text in the HTML that crawlers read.
-  const toggle = document.querySelector<HTMLButtonElement>('[data-contact]');
-  const panel = document.getElementById('contact-detail');
-  if (toggle && panel) {
-    const hint = toggle.querySelector('[data-hint]');
+  const root = document.querySelector<HTMLElement>('.socials[data-contact]');
+  const pop = root?.querySelector<HTMLElement>('.pop');
+  if (root && pop) {
+    const label = pop.querySelector('[data-pop-label]')!;
+    const value = pop.querySelector('[data-pop-value]')!;
+    const mail = pop.querySelector<HTMLAnchorElement>('[data-pop-mail]')!;
+    const copy = pop.querySelector<HTMLButtonElement>('[data-pop-copy]')!;
+    const triggers = [...root.querySelectorAll<HTMLButtonElement>('[data-reveal]')];
     let values: { email: string; qq: string } | null = null;
+    let current: HTMLButtonElement | null = null;
 
-    toggle.addEventListener('click', () => {
-      if (!values) {
-        const bytes = Uint8Array.from(atob(toggle.dataset.contact ?? ''), (c) => c.charCodeAt(0));
-        values = JSON.parse(new TextDecoder().decode(bytes));
-        const email = panel.querySelector<HTMLAnchorElement>('[data-email]');
-        const qq = panel.querySelector('[data-qq]');
-        if (email && values) {
-          email.textContent = values.email;
-          email.href = `mailto:${values.email}`;
-        }
-        if (qq && values) qq.textContent = values.qq;
+    const decode = () => {
+      if (values) return values;
+      const bytes = Uint8Array.from(atob(root.dataset.contact ?? ''), (c) => c.charCodeAt(0));
+      return (values = JSON.parse(new TextDecoder().decode(bytes)));
+    };
+
+    const close = () => {
+      pop.hidden = true;
+      current?.setAttribute('aria-expanded', 'false');
+      current = null;
+    };
+
+    const open = (btn: HTMLButtonElement) => {
+      const field = btn.dataset.reveal as 'email' | 'qq';
+      const v = decode()![field];
+      label.textContent = field === 'email' ? '邮箱' : 'QQ';
+      value.textContent = v;
+      mail.style.display = field === 'email' ? '' : 'none';
+      if (field === 'email') mail.href = `mailto:${v}`;
+      copy.textContent = '复制';
+      current?.setAttribute('aria-expanded', 'false');
+      current = btn;
+      btn.setAttribute('aria-expanded', 'true');
+      // Anchor the popover under the icon that opened it.
+      pop.style.setProperty('--x', `${btn.offsetLeft + btn.offsetWidth / 2}px`);
+      pop.hidden = false;
+    };
+
+    triggers.forEach((btn) =>
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        current === btn && !pop.hidden ? close() : open(btn);
+      }),
+    );
+
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(value.textContent ?? '');
+        copy.textContent = '已复制';
+      } catch {
+        copy.textContent = '复制失败';
       }
-      const open = panel.hidden;
-      panel.hidden = !open;
-      toggle.setAttribute('aria-expanded', String(open));
-      if (hint) hint.textContent = open ? '收起' : '显示';
     });
 
-    for (const btn of panel.querySelectorAll<HTMLButtonElement>('[data-copy-field]')) {
-      btn.addEventListener('click', async () => {
-        const field = btn.dataset.copyField as 'email' | 'qq';
-        try {
-          await navigator.clipboard.writeText(values?.[field] ?? '');
-          btn.textContent = '已复制';
-        } catch {
-          btn.textContent = '复制失败';
-        }
-        setTimeout(() => (btn.textContent = '复制'), 1600);
-      });
-    }
+    pop.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !pop.hidden) {
+        const btn = current;
+        close();
+        btn?.focus();
+      }
+    });
   }
 </script>
 
@@ -216,8 +235,8 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
   }
 
   .bar {
-    height: 6px;
-    border-radius: 3px;
+    height: 4px;
+    border-radius: 2px;
     background: var(--line);
     position: relative;
     overflow: hidden;
@@ -228,7 +247,7 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
     position: absolute;
     inset: 0 auto 0 0;
     width: var(--w);
-    border-radius: 3px;
+    border-radius: 2px;
     background: var(--text-3);
   }
 
@@ -252,90 +271,95 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
     font-size: 14px;
   }
 
-  .links {
+  /* Contact: a quiet row of solid marks; email and QQ reveal in a popover. */
+  .socials {
+    position: relative;
+    display: flex;
+    gap: 8px;
+  }
+
+  .social {
     display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
     border: 1px solid var(--line);
-    border-radius: var(--r-xl);
+    border-radius: var(--r-lg);
     background: var(--surface);
-    overflow: hidden;
-  }
-
-  .link-row {
-    display: grid;
-    grid-template-columns: 20px auto 1fr 16px;
-    align-items: center;
-    gap: 12px;
-    padding: 16px 20px;
-    transition: background-color 0.15s var(--ease);
-  }
-
-  .link-row + .link-row {
-    border-top: 1px solid var(--line);
-  }
-
-  .copy-row {
-    width: 100%;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
+    color: var(--text-2);
     cursor: pointer;
+    transition: color 0.15s var(--ease), border-color 0.15s var(--ease), background-color 0.15s var(--ease);
   }
 
-  .copy-row + .link-row,
-  .link-row + .copy-row {
-    border-top: 1px solid var(--line);
+  .social:hover,
+  .social[aria-expanded='true'] {
+    color: var(--text);
+    border-color: var(--line-strong);
+    background: var(--bg-sunk);
   }
 
-  .hint {
+  .pop {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: clamp(0px, calc(var(--x, 0px) - 9rem), calc(100% - 18rem));
+    z-index: 5;
+    width: min(18rem, 100%);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 4px 12px;
+    padding: 12px 12px 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .pop[hidden] {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pop:not([hidden]) {
+      animation: pop-in 0.18s var(--ease);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  .pk {
     font-size: 13px;
     color: var(--text-3);
   }
 
-  .copy-row[aria-expanded='true'] .hint {
-    color: var(--accent);
-  }
-
-  .contact-detail {
-    display: grid;
-    gap: 4px;
-    padding: 8px 20px 12px 52px;
-    background: var(--bg-sunk);
-    border-top: 1px solid var(--line);
-  }
-
-  .contact-detail[hidden] {
-    display: none;
-  }
-
-  .detail-row {
-    display: grid;
-    grid-template-columns: 3rem minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 12px;
-    height: 36px;
-    font-size: 14px;
-  }
-
-  .dk {
-    color: var(--text-3);
-  }
-
-  .dv {
+  .pv {
+    font-size: 15px;
     color: var(--text);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    user-select: all;
   }
 
-  a.dv:hover {
-    color: var(--accent);
+  .pa {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   .mini {
+    display: inline-flex;
+    align-items: center;
     height: 28px;
-    padding: 0 8px;
+    padding: 0 12px;
     border: 1px solid var(--line-strong);
     border-radius: var(--r-sm);
     background: var(--surface);
@@ -350,46 +374,7 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
     color: var(--text);
   }
 
-  .link-row:hover {
-    background: var(--bg-sunk);
-  }
-
-  .link-row :global(svg) {
-    color: var(--text-2);
-  }
-
-  .link-row .t {
-    font-weight: 500;
-  }
-
-  .link-row .d {
-    color: var(--text-3);
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .link-row :global(.go) {
-    color: var(--text-3);
-    transition: transform 0.15s var(--ease);
-  }
-
-  .link-row:hover :global(.go) {
-    transform: translateX(2px);
-  }
-
-  .link-row.copy-row {
-    grid-template-columns: 20px auto 1fr auto;
-  }
-
   @media (max-width: 640px) {
-    .link-row.copy-row {
-      grid-template-columns: 20px auto 1fr auto;
-    }
-    .link-row .d {
-      display: block;
-    }
     .facts {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -398,10 +383,6 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
     }
     .facts > div:nth-child(n + 3) {
       border-top: 1px solid var(--line);
-    }
-    .link-row {
-      grid-template-columns: 20px auto minmax(0, 1fr) 16px;
-      padding: 16px;
     }
   }
 </style>

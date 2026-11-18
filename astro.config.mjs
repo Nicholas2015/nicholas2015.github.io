@@ -18,6 +18,12 @@ export default defineConfig({
   redirects: {
     '/contact': '/about/',
     '/categories': '/tags/',
+    // Tags merged into categories or other tags.
+    '/tags/AI': '/categories/AI/',
+    '/tags/database': '/tags/mysql/',
+    '/tags/test': '/archives/',
+    '/categories/JAVA基础': '/categories/java/',
+    '/categories/测试': '/categories/随笔/',
     '/page/2': '/archives/',
     '/archives/page/2': '/archives/',
     ...Object.fromEntries(

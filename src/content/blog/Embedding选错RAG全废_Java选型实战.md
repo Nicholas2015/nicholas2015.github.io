@@ -2,7 +2,7 @@
 title: "Embedding 选错 RAG 全废 Java 选型实战"
 date: 2026-11-06T20:00:00+08:00
 category: "AI"
-tags: ["AI", "rag"]
+tags: ["rag"]
 ---
 
 **摘要：** RAG 召回一堆无关文档，第一反应往往是换切分策略、加重排序，其实八成问题出在 Embedding 模型上。本文讲清 Embedding 到底在干什么、怎么选、怎么在 Spring AI 和 LangChain4j 里用起来，附完整可运行代码和三个常见坑。

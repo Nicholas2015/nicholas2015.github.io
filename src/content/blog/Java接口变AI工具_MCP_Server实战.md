@@ -2,7 +2,7 @@
 title: "Java接口变AI工具：MCP Server实战"
 date: 2026-10-14T20:00:00+08:00
 category: "AI"
-tags: ["AI", "mcp"]
+tags: ["mcp"]
 ---
 
 **摘要：** 用 Spring AI 的 MCP Server Starter，把普通 Java 业务方法变成 AI 客户端能直接调用的工具。本文讲清 MCP 协议原理和三种传输方式的取舍，用注解式和编程式两种写法落地，附完整 pom、完整类和 curl 调用验证，让 Claude 这类客户端开箱即用。

@@ -2,7 +2,7 @@
 title: "LangChain4j多轮对话失忆，记忆这样持久化"
 date: 2026-11-13T20:00:00+08:00
 category: "AI"
-tags: ["AI", "langchain4j"]
+tags: ["langchain4j"]
 ---
 
 > 用户上一句刚说"我用的 MySQL 8"，下一句 AI 就开始推荐 PostgreSQL。你去查日志，发现每次请求真的只发了当前这句话。换个思路把历史全塞进去，token 账单立刻翻三倍，进程一重启历史又全没了。多轮对话的记忆问题，本质不是模型笨，是你没给它一个像样的"记忆容器"。这篇文章把 LangChain4j 1.x 的 ChatMemory 拆开讲清楚，再给你三套能直接跑的落地方案。

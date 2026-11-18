@@ -2,7 +2,7 @@
 title: "Spring AI 流式输出：SSE 打字机效果实战"
 date: 2026-10-04T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai"]
+tags: ["spring-ai"]
 ---
 
 **摘要：** Spring AI 的 stream() 返回 Flux<String>，每个元素就是模型刚生成的一小段文本。本文讲清 Flux 怎么真正写回 HTTP 响应、接了工具调用后前端为什么一个字都不吐，以及中文乱码和 Nginx 缓冲这两个最容易被误判成「代码没生效」的坑，附完整可运行代码。

@@ -1,7 +1,7 @@
 ---
 title: "java拷贝技术探究"
 date: 2014-06-26T20:37:00+08:00
-category: "JAVA基础"
+category: "java"
 tags: ["java"]
 ---
 

@@ -2,7 +2,7 @@
 title: "LangChain4j 提示词缓存，调用成本砍九成"
 date: 2026-10-13T20:00:00+08:00
 category: "AI"
-tags: ["AI", "langchain4j"]
+tags: ["langchain4j"]
 ---
 
 **摘要：** 在 Java 里用 LangChain4j 给 Anthropic 模型开启提示词缓存，让重复的系统提示词和工具定义不再每次重新计费。本文讲清缓存原理，用 cacheSystemMessages、cacheTools、cacheAutomatically 三个开关落地，附完整可运行代码和 token 账单实测。

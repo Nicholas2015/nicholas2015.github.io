@@ -14,6 +14,10 @@ await mkdir(outDir, { recursive: true });
 // Posts that are only a title in the Hexo source; keep them as drafts.
 const DRAFTS = new Set(['design-pattern-observer', 'design-pattern-singleton']);
 
+// Fold Hexo-era names into the categories and tags the newer posts use.
+const CATEGORY_ALIAS = { JAVA基础: 'java', 测试: '随笔' };
+const TAG_ALIAS = { database: 'mysql', test: null, AI: null };
+
 const toList = (v) => {
   if (!v) return [];
   if (v.startsWith('[')) return v.slice(1, -1).split(',').map((s) => s.trim()).filter(Boolean);
@@ -71,8 +75,8 @@ for (const file of (await readdir(srcDir)).filter((f) => f.endsWith('.md'))) {
     '---',
     `title: ${quote(fm.title)}`,
     `date: ${date}`,
-    `category: ${quote(toList(fm.categories)[0] ?? '未分类')}`,
-    `tags: [${toList(fm.tags).map(quote).join(', ')}]`,
+    `category: ${quote(CATEGORY_ALIAS[toList(fm.categories)[0]] ?? toList(fm.categories)[0] ?? '未分类')}`,
+    `tags: [${[...new Set(toList(fm.tags).map((t) => (t in TAG_ALIAS ? TAG_ALIAS[t] : t)).filter(Boolean))].map(quote).join(', ')}]`,
     ...(DRAFTS.has(slug) ? ['draft: true'] : []),
     '---',
     '',

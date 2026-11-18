@@ -2,7 +2,7 @@
 title: "Spring AI Agent 工具调用失控？加上这道闸门"
 date: 2026-10-20T20:00:00+08:00
 category: "AI"
-tags: ["AI", "spring-ai", "agent"]
+tags: ["spring-ai", "agent"]
 ---
 
 **摘要：** Agent 反复调同一个工具、一次提问烧掉几十次模型请求，是 Java 侧最常见的线上事故。本文用 Spring AI 拆开工具调用循环：模型只出意图、应用负责执行。先用内置限额兜底，再用手写循环加审批和审计，附完整可运行代码。

@@ -2,7 +2,7 @@
 title: "LangChain4j工具报错，别把异常喂给大模型"
 date: 2026-11-01T20:00:00+08:00
 category: "AI"
-tags: ["AI", "langchain4j"]
+tags: ["langchain4j"]
 ---
 
 > 线上客服助手接了查订单的工具。某天数据库抖了一下，工具抛了异常。用户问「我的单到哪了」，模型很诚实地回答：「系统提示 Communications link failure: jdbc:mysql://10.0.3.7:3306/order_db?user=order_svc」——内网 IP、库名、账号，全念给了用户。这不是模型抽风，是框架的默认行为。这篇讲清楚异常怎么跑到模型嘴里，以及怎么拦住它。

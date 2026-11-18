@@ -1,0 +1,100 @@
+---
+// Types each line out, holds it, deletes it, then moves to the next. Loops.
+// Screen readers get all lines at once; reduced motion shows the first line still.
+interface Props {
+  lines: string[];
+  class?: string;
+}
+
+const { lines, class: className } = Astro.props;
+---
+
+<p class:list={['typewriter', className]} data-lines={JSON.stringify(lines)}>
+  <span class="sr">{lines.join('。')}</span>
+  <span class="text" aria-hidden="true">{lines[0]}</span><span class="caret" aria-hidden="true"></span>
+</p>
+
+<style>
+  .typewriter {
+    display: flex;
+    align-items: center;
+    min-height: 1.6em;
+  }
+
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .caret {
+    flex-shrink: 0;
+    width: 2px;
+    height: 1.1em;
+    margin-left: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .caret {
+      animation: caret 1s steps(1) infinite;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret {
+      display: none;
+    }
+  }
+
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  const TYPE = 100;
+  const DELETE = 45;
+  const HOLD = 2200;
+  const GAP = 400;
+
+  for (const el of document.querySelectorAll<HTMLElement>('.typewriter[data-lines]')) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
+    const text = el.querySelector<HTMLElement>('.text');
+    if (!text) continue;
+    const lines: string[] = JSON.parse(el.dataset.lines ?? '[]');
+    if (lines.length === 0) continue;
+
+    // Iterate by code point so CJK and emoji are never split.
+    const chars = lines.map((l) => Array.from(l));
+    let line = 0;
+    let shown = chars[0].length;
+    let deleting = true;
+
+    const tick = () => {
+      const current = chars[line];
+      if (deleting) {
+        shown--;
+        text.textContent = current.slice(0, shown).join('');
+        if (shown > 0) return setTimeout(tick, DELETE);
+        deleting = false;
+        line = (line + 1) % chars.length;
+        return setTimeout(tick, GAP);
+      }
+      shown++;
+      text.textContent = chars[line].slice(0, shown).join('');
+      if (shown < chars[line].length) return setTimeout(tick, TYPE);
+      deleting = true;
+      setTimeout(tick, HOLD);
+    };
+
+    // Start by showing the first line fully, as rendered, then begin the cycle.
+    setTimeout(tick, HOLD);
+  }
+</script>

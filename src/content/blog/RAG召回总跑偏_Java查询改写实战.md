@@ -2,7 +2,7 @@
 title: "RAG 召回总跑偏？Java 先改写用户问题"
 date: 2026-11-07T20:00:00+08:00
 category: "AI"
-tags: ["AI", "rag"]
+tags: ["rag"]
 ---
 
 **摘要：** RAG 召回不准，很多人第一反应是换 Embedding、调 chunk size。其实用户那句口语化的提问本身就检索不到东西。本文用 LangChain4j 1.x 做查询改写 + 多路召回 + RRF 融合，附完整可运行代码、延迟数据和四个真实坑。

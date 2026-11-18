@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
+import Typewriter from '../components/Typewriter.astro';
 import { SITE } from '../consts';
 import { countBy, excerpt, formatDate, getPosts, getTools, postUrl, type Post } from '../lib/content';
 
@@ -15,24 +16,26 @@ const featured = (tools.some((t) => t.data.featured) ? tools.filter((t) => t.dat
 const [lead, ...rest] = posts;
 const recent = rest.slice(0, 6);
 
-// Topic shelves: the busiest categories, newest three posts each.
+// Topic shelves: the biggest category leads with more posts; the next three sit beside it.
 const shelves = countBy(posts.map((p) => p.data.category))
   .slice(0, 4)
-  .map(([name, n]) => ({ name, n, items: posts.filter((p) => p.data.category === name).slice(0, 3) }));
+  .map(([name, n], i) => ({ name, n, items: posts.filter((p) => p.data.category === name).slice(0, i === 0 ? 6 : 3) }));
+const [mainShelf, ...sideShelves] = shelves;
 
 const firstYear = posts.at(-1)?.data.date.getFullYear();
 const md = (p: Post) => formatDate(p.data.date).slice(5);
 
 // The step card shows a real sequence from a real post, so readers see what the notes are like.
-const stepPost = posts.find((p) => p.id === 'ollama-local-model-deploy') ?? lead;
-const steps = `# Linux 一行命令安装
-curl -fsSL https://ollama.com/install.sh | sh
+// Taken verbatim from "Spring AI 接 Ollama，本地大模型 RAG 实战".
+const stepPost = posts.find((p) => p.id === 'spring_ai接ollama_本地大模型rag实战') ?? lead;
+const steps = `# 对话模型，7B 在 16G 内存的机器上能跑
+ollama pull qwen2.5:7b
 
-# 确认安装成功
-ollama -v
+# Embedding 模型，负责把文字转向量
+ollama pull nomic-embed-text
 
-# 查看服务是否正常运行
-sudo systemctl status ollama`;
+# 确认服务起来了，默认监听 11434
+ollama serve`;
 ---
 
 <BaseLayout>
@@ -40,6 +43,7 @@ sudo systemctl status ollama`;
     <div class="container hero-inner">
       <div class="intro">
         <h1 class="rise">{SITE.title}</h1>
+        <Typewriter lines={SITE.slogans} class="slogan rise rise-2" />
         <p class="lead rise rise-2">
           {SITE.author}的技术笔记。Spring AI、RAG、Kafka、Redis、线上排查，一步一步讲清楚，命令可以直接复制
         </p>
@@ -102,21 +106,40 @@ sudo systemctl status ollama`;
       <a class="more arrow-link" href="/tags/">全部分类和标签 <Icon name="arrowRight" size={16} /></a>
     </div>
     <div class="shelves">
-      {shelves.map((s) => (
-        <section class="shelf">
-          <a class="shelf-head" href={`/categories/${s.name}/`}>
-            <h3>{s.name}</h3>
-            <span class="num">{s.n} 篇</span>
-          </a>
-          <ul>
-            {s.items.map((p) => (
-              <li>
-                <a href={postUrl(p)}>{p.data.title}</a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <section class="shelf shelf-main">
+        <a class="shelf-head" href={`/categories/${mainShelf.name}/`}>
+          <h3>{mainShelf.name}</h3>
+          <span class="num">{mainShelf.n} 篇</span>
+        </a>
+        <ul>
+          {mainShelf.items.map((p) => (
+            <li>
+              <a href={postUrl(p)}>
+                <span class="d num">{md(p)}</span>
+                <span class="t">{p.data.title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a class="shelf-more arrow-link" href={`/categories/${mainShelf.name}/`}>{mainShelf.name} 全部 {mainShelf.n} 篇 <Icon name="arrowRight" size={14} /></a>
+      </section>
+      <div class="side">
+        {sideShelves.map((s) => (
+          <section class="shelf">
+            <a class="shelf-head" href={`/categories/${s.name}/`}>
+              <h3>{s.name}</h3>
+              <span class="num">{s.n} 篇</span>
+            </a>
+            <ul>
+              {s.items.map((p) => (
+                <li>
+                  <a href={postUrl(p)}><span class="t">{p.data.title}</span></a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -153,6 +176,12 @@ sudo systemctl status ollama`;
     font-weight: 500;
     letter-spacing: -0.03em;
     line-height: 1.04;
+  }
+
+  .hero :global(.slogan) {
+    margin-top: 16px;
+    font-size: clamp(1rem, 1.6vw, 1.125rem);
+    color: var(--text-3);
   }
 
   .lead {
@@ -284,7 +313,6 @@ sudo systemctl status ollama`;
   .lead-post h3 {
     font-size: clamp(1.5rem, 2.6vw, 2rem);
     line-height: 1.3;
-    letter-spacing: -0.02em;
     transition: color 0.15s var(--ease);
   }
 
@@ -347,25 +375,35 @@ sudo systemctl status ollama`;
     color: var(--accent);
   }
 
-  /* Topic shelves */
+  /* Topic shelves: the biggest category leads, the next three stack beside it */
   .shelves {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     border: 1px solid var(--line);
     border-radius: var(--r-xl);
     background: var(--surface);
     overflow: hidden;
   }
 
+  .side {
+    display: grid;
+    border-left: 1px solid var(--line);
+  }
+
+  .side .shelf + .shelf {
+    border-top: 1px solid var(--line);
+  }
+
   .shelf {
     padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
-  .shelf + .shelf {
-    border-left: 1px solid var(--line);
+  .shelf-main {
+    gap: 16px;
+    padding: 28px 32px;
   }
 
   .shelf-head {
@@ -376,8 +414,12 @@ sudo systemctl status ollama`;
   }
 
   .shelf-head h3 {
-    font-size: 17px;
+    font-size: 16px;
     transition: color 0.15s var(--ease);
+  }
+
+  .shelf-main .shelf-head h3 {
+    font-size: 1.375rem;
   }
 
   .shelf-head:hover h3 {
@@ -394,21 +436,69 @@ sudo systemctl status ollama`;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 12px;
+    gap: 8px;
   }
 
   .shelf li a {
+    display: block;
     font-size: 14px;
     line-height: 1.6;
     color: var(--text-2);
+  }
+
+  .shelf .t {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     transition: color 0.15s var(--ease);
   }
 
-  .shelf li a:hover {
+  .shelf li a:hover .t {
+    color: var(--text);
+  }
+
+  .shelf-main ul {
+    gap: 0;
+  }
+
+  .shelf-main li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .shelf-main li a {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 12px;
+    align-items: baseline;
+    padding: 12px 0;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .shelf-main .d {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .shelf-main li a:hover .t {
+    color: var(--accent);
+  }
+
+  .shelf-main li:first-child a {
+    padding-top: 0;
+  }
+
+  .shelf-more {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    color: var(--text-2);
+    transition: color 0.15s var(--ease);
+  }
+
+  .shelf-more:hover {
     color: var(--text);
   }
 
@@ -433,23 +523,22 @@ sudo systemctl status ollama`;
       gap: 32px;
     }
     .shelves {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
     }
-    .shelf:nth-child(3) {
+    .side {
       border-left: 0;
-    }
-    .shelf:nth-child(n + 3) {
       border-top: 1px solid var(--line);
+    }
+    .shelf-main {
+      padding: 24px;
     }
   }
 
   @media (max-width: 560px) {
-    .shelves {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .shelf + .shelf {
-      border-left: 0;
-      border-top: 1px solid var(--line);
+    /* Commands scroll inside the frame; shrink a step so the common lines fit. */
+    .step :global(pre) {
+      font-size: 12.5px;
+      padding: 16px;
     }
   }
 </style>

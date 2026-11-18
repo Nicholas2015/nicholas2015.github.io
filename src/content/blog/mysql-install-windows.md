@@ -2,7 +2,7 @@
 title: "MySQL免安装版部署"
 date: 2021-06-22T22:45:16+08:00
 category: "运维"
-tags: ["database"]
+tags: ["mysql"]
 ---
 
 ## 下载地址

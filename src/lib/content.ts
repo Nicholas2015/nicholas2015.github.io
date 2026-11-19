@@ -84,6 +84,14 @@ const TAG_LABEL: Record<string, string> = {
 
 export const tagLabel = (tag: string) => TAG_LABEL[tag] ?? tag;
 
+// Category slugs stay lowercase in front matter and URLs; readers see these names.
+const CATEGORY_LABEL: Record<string, string> = {
+  java: 'Java',
+  ai: 'AI',
+};
+
+export const categoryLabel = (category: string) => CATEGORY_LABEL[category] ?? category;
+
 export const STATUS_LABEL = { stable: '可用', beta: '测试中', wip: '开发中' } as const;
 
 export const PLATFORM_LABEL = {

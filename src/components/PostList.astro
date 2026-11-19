@@ -1,5 +1,5 @@
 ---
-import { excerpt, formatDate, postUrl, type Post } from '../lib/content';
+import { categoryLabel, excerpt, formatDate, postUrl, type Post } from '../lib/content';
 
 interface Props {
   posts: Post[];
@@ -21,7 +21,7 @@ const { posts, showExcerpt = true } = Astro.props;
           </h3>
           {showExcerpt && <p>{post.data.description ?? excerpt(post.body, 90)}</p>}
         </div>
-        <span class="cat">{post.data.category}</span>
+        <span class="cat">{categoryLabel(post.data.category)}</span>
       </a>
     </li>
   ))}

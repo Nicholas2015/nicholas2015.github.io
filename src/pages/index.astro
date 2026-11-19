@@ -8,7 +8,7 @@ import Icon from '../components/Icon.astro';
 import Typewriter from '../components/Typewriter.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
-import { countBy, excerpt, formatDate, getPosts, getTools, postUrl, type Post } from '../lib/content';
+import { categoryLabel, countBy, excerpt, formatDate, getPosts, getTools, postUrl, type Post } from '../lib/content';
 
 const posts = (await getPosts()).filter((p) => !p.data.draft);
 const tools = await getTools();
@@ -19,10 +19,11 @@ const [lead, ...rest] = posts;
 const recent = rest.slice(0, 6);
 
 // Topic tabs: categories with a real body of posts, newest six each.
+// Kept keyed by the slug, since it drives the per-category lookup; only the tab shows the label.
 const topics = countBy(posts.map((p) => p.data.category))
   .filter(([, n]) => n >= 3)
   .slice(0, 6)
-  .map(([name, n]) => ({ name, n, items: posts.filter((p) => p.data.category === name).slice(0, 6) }));
+  .map(([slug, n]) => ({ slug, label: categoryLabel(slug), n, items: posts.filter((p) => p.data.category === slug).slice(0, 6) }));
 
 const firstYear = posts.at(-1)?.data.date.getFullYear();
 const md = (p: Post) => formatDate(p.data.date).slice(5);
@@ -121,7 +122,7 @@ ollama serve`;
             aria-selected={i === 0 ? 'true' : 'false'}
             tabindex={i === 0 ? 0 : -1}
           >
-            {t.name}<span class="n num">{t.n}</span>
+            {t.label}<span class="n num">{t.n}</span>
           </button>
         ))}
       </div>

@@ -1,7 +1,7 @@
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
 import { SITE } from '../consts';
-import { excerpt, getPosts, postUrl, tagLabel } from '../lib/content';
+import { categoryLabel, excerpt, getPosts, postUrl, tagLabel } from '../lib/content';
 
 export async function GET(context: APIContext) {
   const posts = (await getPosts()).filter((p) => !p.data.draft);
@@ -16,7 +16,7 @@ export async function GET(context: APIContext) {
       pubDate: post.data.date,
       description: post.data.description ?? excerpt(post.body, 200),
       // Category and tags can repeat (e.g. "AI" as both); feed readers show each one.
-      categories: [...new Set([post.data.category, ...post.data.tags.map(tagLabel)])],
+      categories: [...new Set([categoryLabel(post.data.category), ...post.data.tags.map(tagLabel)])],
       link: postUrl(post),
     })),
     customData: `<language>zh-CN</language><atom:link href="${self}" rel="self" type="application/rss+xml"/>`,

@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import { SITE } from '../consts';
-import { countBy, formatDate, getPosts } from '../lib/content';
+import { categoryLabel, countBy, formatDate, getPosts } from '../lib/content';
 
 const posts = (await getPosts()).filter((p) => !p.data.draft);
 const first = posts.at(-1)!;
@@ -56,7 +56,7 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
         {categories.map(([name, n], i) => (
           <li style={`--w:${(n / max) * 100}%`} class:list={{ lead: i === 0 }}>
             <a href={`/categories/${name}/`}>
-              <span class="name">{name}</span>
+              <span class="name">{categoryLabel(name)}</span>
               <span class="bar" aria-hidden="true"><i></i></span>
               <span class="count num">{n} 篇</span>
             </a>

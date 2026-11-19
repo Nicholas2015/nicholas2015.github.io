@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { countBy, formatDate, getPosts, postUrl } from '../../lib/content';
+import { categoryLabel, countBy, formatDate, getPosts, postUrl } from '../../lib/content';
 
 const posts = await getPosts();
 const categories = countBy(posts.map((p) => p.data.category));
@@ -22,7 +22,7 @@ const byYear = [...Map.groupBy(posts, (p) => formatDate(p.data.date).slice(0, 4)
     <div class="filter" role="toolbar" aria-label="按分类筛选">
       <button type="button" class="chip" aria-pressed="true" data-cat="">全部 <span class="num">{posts.length}</span></button>
       {categories.map(([name, n]) => (
-        <button type="button" class="chip" aria-pressed="false" data-cat={name}>{name} <span class="num">{n}</span></button>
+        <button type="button" class="chip" aria-pressed="false" data-cat={name}>{categoryLabel(name)} <span class="num">{n}</span></button>
       ))}
     </div>
 
@@ -42,7 +42,7 @@ const byYear = [...Map.groupBy(posts, (p) => formatDate(p.data.date).slice(0, 4)
                         {p.data.title}
                         {p.data.draft && <span class="tag draft">草稿</span>}
                       </span>
-                      <span class="c">{p.data.category}</span>
+                      <span class="c">{categoryLabel(p.data.category)}</span>
                     </a>
                   </li>
                 ))}

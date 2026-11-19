@@ -1,5 +1,5 @@
 ---
-import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 import { SITE } from '../consts';
 const year = new Date().getFullYear();
 ---
@@ -7,7 +7,7 @@ const year = new Date().getFullYear();
 <footer class="site-footer">
   <div class="container inner">
     <div class="who">
-      <a class="brand" href="/"><Icon name="cloud" size={18} />{SITE.title}</a>
+      <a class="brand" href="/"><Logo size={16} />{SITE.title}</a>
       <p>{SITE.author}的技术笔记 · {SITE.description}</p>
     </div>
     <nav class="links" aria-label="页脚导航">
@@ -48,10 +48,6 @@ const year = new Date().getFullYear();
     gap: 8px;
     color: var(--text);
     font-weight: 600;
-  }
-
-  .brand :global(svg) {
-    color: var(--accent);
   }
 
   .who p {

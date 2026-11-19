@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 import { SITE } from '../consts';
 
 const nav = [
@@ -16,7 +17,7 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
 <header class="site-header">
   <div class="container bar">
     <a class="brand" href="/" aria-label={`${SITE.title} 首页`}>
-      <Icon name="cloud" size={22} />
+      <Logo size={20} />
       <span>{SITE.title}</span>
     </a>
     <nav aria-label="主导航">
@@ -61,10 +62,6 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
     font-weight: 600;
     font-size: 16px;
     white-space: nowrap;
-  }
-
-  .brand :global(svg) {
-    color: var(--accent);
   }
 
   nav {

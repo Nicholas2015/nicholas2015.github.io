@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" rx="200" fill="#fbfbfc"/><g transform="translate(-27.06 17.70) scale(0.9730)">
+  <defs>
+    <clipPath id="byg-open">
+      <path d="M0 0H1024V409.4L920 432 520 432 520 500 224 519 69 716 0 716Z"/>
+    </clipPath>
+    <mask id="byg-ring" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <g fill="#fff">
+        <circle cx="273" cy="466.1" r="161.25"/>
+        <circle cx="499.45" cy="406.85" r="247.8"/>
+        <circle cx="804.1" cy="429" r="185.8"/>
+      </g>
+      <g fill="#000">
+        <circle cx="282.6" cy="478.35" r="79.7"/>
+        <circle cx="512.35" cy="434.6" r="174.3"/>
+        <circle cx="795.7" cy="463.6" r="133.9"/>
+      </g>
+    </mask>
+  </defs>
+  <rect width="1024" height="1024" fill="#30483d" mask="url(#byg-ring)" clip-path="url(#byg-open)"/>
+  <g fill="#30483d">
+    <rect x="188" y="652" width="428" height="76"/>
+    <rect x="268" y="792" width="288" height="64"/>
+    <rect x="684" y="528" width="68" height="268"/>
+  </g>
+  <rect x="800" y="644" width="100" height="24" fill="#a77b51"/>
+</g></svg>

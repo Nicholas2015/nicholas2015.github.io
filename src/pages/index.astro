@@ -5,6 +5,7 @@ import ToolCard from '../components/ToolCard.astro';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
 import Typewriter from '../components/Typewriter.astro';
+import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
 import { countBy, excerpt, formatDate, getPosts, getTools, postUrl, type Post } from '../lib/content';
 
@@ -42,7 +43,13 @@ ollama serve`;
   <section class="hero">
     <div class="container hero-inner">
       <div class="intro">
-        <h1 class="rise">{SITE.title}</h1>
+        <p class="stat rise">
+          <span class="num">{firstYear}</span> 年起 · <span class="num">{posts.length}</span> 篇 · 最近更新 <span class="num">{formatDate(lead.data.date).slice(5)}</span>
+        </p>
+        <h1 class="rise">
+          <Logo size={56} class="mark" />
+          <span>{SITE.title}</span>
+        </h1>
         <Typewriter lines={SITE.slogans} class="slogan rise rise-2" />
         <p class="lead rise rise-2">
           {SITE.author}的技术笔记。Spring AI、RAG、Kafka、Redis、线上排查，一步一步讲清楚，命令可以直接复制
@@ -51,9 +58,6 @@ ollama serve`;
           <a class="btn btn-primary arrow-link" href="/archives/">阅读文章 <Icon name="arrowRight" size={16} /></a>
           <a class="btn" href="/subscribe/"><Icon name="rss" size={16} /> 订阅</a>
         </div>
-        <p class="stat rise rise-3">
-          <span class="num">{posts.length}</span> 篇 · 从 <span class="num">{firstYear}</span> 年写到现在 · 最近更新 <span class="num">{formatDate(lead.data.date)}</span>
-        </p>
       </div>
 
       <figure class="step rise rise-3">
@@ -171,21 +175,31 @@ ollama serve`;
     padding-bottom: 96px;
   }
 
+  /* Mark and name read as one lockup; the mark is sized to the cap height of the name. */
   h1 {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     font-size: clamp(3rem, 7vw, 4.5rem);
     font-weight: 500;
     letter-spacing: -0.03em;
     line-height: 1.04;
   }
 
+  h1 :global(.mark) {
+    width: auto;
+    height: 0.8em;
+  }
+
   .hero :global(.slogan) {
-    margin-top: 16px;
+    margin-top: 20px;
+    max-width: 32rem;
     font-size: clamp(1rem, 1.6vw, 1.125rem);
     color: var(--text-3);
   }
 
   .lead {
-    margin-top: 24px;
+    margin-top: 12px;
     max-width: 32rem;
     font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
     line-height: 1.6;
@@ -199,8 +213,9 @@ ollama serve`;
     gap: 12px;
   }
 
+  /* Facts sit above the name as a quiet line, so the buttons end the block. */
   .stat {
-    margin-top: 24px;
+    margin-bottom: 20px;
     font-size: 13px;
     color: var(--text-3);
   }

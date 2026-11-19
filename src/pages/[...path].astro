@@ -24,7 +24,14 @@ interface Props {
 const { post, newer, older } = Astro.props;
 const { Content, headings } = await render(post);
 const { title, date, updated, category, tags } = post.data;
-const toc = headings.filter((h) => h.depth <= 3);
+// Hand-written posts may open with `# Title`, repeating the page title. Hide it and keep it out of the TOC.
+const norm = (s: string) => s.replace(/[\s_，,！!？?。.“”"（）()：:]/g, '').toLowerCase();
+const lead = headings[0];
+const dupTitle =
+  lead?.depth === 1 && (norm(lead.text) === norm(title) || norm(title).startsWith(norm(lead.text)) || norm(lead.text).startsWith(norm(title)))
+    ? lead.slug
+    : null;
+const toc = headings.filter((h) => h.depth <= 3 && h.slug !== dupTitle);
 const minDepth = 2;
 // Prose at ~400 CJK chars/min; code gets skimmed, roughly 25 lines a minute.
 const body = post.body ?? '';
@@ -58,7 +65,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
     </header>
 
     <div class:list={['container layout', { 'has-toc': toc.length >= 3 }]}>
-      <div class="prose">
+      <div class:list={['prose', { 'drop-title': dupTitle }]}>
         <Content />
       </div>
 
@@ -184,6 +191,15 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
 
   .layout .prose {
     min-width: 0;
+  }
+
+  /* The page header already shows the title. */
+  .drop-title > :global(h1:first-child) {
+    display: none;
+  }
+
+  .drop-title > :global(h1:first-child + *) {
+    margin-top: 0;
   }
 
   .toc {

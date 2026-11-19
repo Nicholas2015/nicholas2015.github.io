@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
+import ThemedShot from '../../components/ThemedShot.astro';
 import { PLATFORM_LABEL, STATUS_LABEL, formatDate, getTools, type Tool } from '../../lib/content';
 
 export async function getStaticPaths() {
@@ -11,58 +12,312 @@ export async function getStaticPaths() {
 
 const { tool } = Astro.props as { tool: Tool };
 const { Content } = await render(tool);
-const { name, tagline, date, status, platforms, demo, repo, download } = tool.data;
+const { name, alias, tagline, date, version, status, platforms, icon, hero, features, audience, demo, repo, download } =
+  tool.data;
+const shown = features.filter((f) => f.shot);
+const rest = features.filter((f) => !f.shot);
 const external = (url?: string) => !!url && /^https?:\/\//.test(url);
 ---
 
-<BaseLayout title={name} description={tagline}>
-  <div class="container narrow">
-    <header class="page-head">
-      <a class="back arrow-link" href="/tools/"><Icon name="arrowLeft" size={16} /> 全部工具</a>
-      <h1 class="rise">{name}</h1>
-      <p class="rise rise-2">{tagline}</p>
-      <div class="actions rise rise-3">
-        {download && <a class="btn btn-primary" href={download} target="_blank" rel="noopener"><Icon name="download" size={16} /> 下载</a>}
-        {demo && (
-          <a class={download ? 'btn' : 'btn btn-primary'} href={demo} {...(external(demo) && { target: '_blank', rel: 'noopener' })}>在线试用</a>
-        )}
-        {repo && <a class="btn" href={repo} target="_blank" rel="noopener"><Icon name="github" size={16} /> 源码</a>}
+<BaseLayout title={alias ? `${name} ${alias}` : name} description={tagline}>
+  <article class="container page">
+    <a class="back arrow-link" href="/tools/"><Icon name="arrowLeft" size={16} /> 全部工具</a>
+
+    <header class="head">
+      <div class="id rise">
+        {icon && <img class="icon" src={icon} alt="" width="64" height="64" />}
+        <div>
+          <h1>{name}{alias && <span class="alias">{alias}</span>}</h1>
+          <p class="tagline">{tagline}</p>
+        </div>
       </div>
-      <p class="facts">
-        {STATUS_LABEL[status]} · {platforms.map((p) => PLATFORM_LABEL[p]).join(' / ')} · 发布于 <span class="num">{formatDate(date)}</span>
+      <div class="intro prose rise rise-2"><Content /></div>
+      <p class="facts rise rise-2">
+        {version && <span>v<span class="num">{version}</span></span>}
+        <span>{STATUS_LABEL[status]}</span>
+        <span>{platforms.map((p) => PLATFORM_LABEL[p]).join(' / ')}</span>
+        <span>更新于 <span class="num">{formatDate(date)}</span></span>
       </p>
+      {(download || demo || repo) && (
+        <div class="actions rise rise-2">
+          {download && <a class="btn btn-primary" href={download} target="_blank" rel="noopener"><Icon name="download" size={16} /> 下载</a>}
+          {demo && (
+            <a class={download ? 'btn' : 'btn btn-primary'} href={demo} {...(external(demo) && { target: '_blank', rel: 'noopener' })}>在线试用</a>
+          )}
+          {repo && <a class="btn" href={repo} target="_blank" rel="noopener"><Icon name="github" size={16} /> 源码</a>}
+        </div>
+      )}
     </header>
-    <div class="prose">
-      <Content />
-    </div>
-  </div>
+
+    {hero && (
+      <figure class="window hero rise rise-3">
+        <ThemedShot {...hero} eager />
+      </figure>
+    )}
+
+    {shown.map((f, i) => (
+      <section class:list={['feature', { flip: i % 2 === 1, wide: f.shot!.width / f.shot!.height > 1.6 }]}>
+        <div class="feature-text">
+          <h2>{f.title}</h2>
+          <p>{f.body}</p>
+        </div>
+        <figure class="window feature-shot">
+          <ThemedShot {...f.shot!} />
+        </figure>
+      </section>
+    ))}
+
+    {rest.length > 0 && (
+      <section class="more">
+        <h2>还能做</h2>
+        <ul>
+          {rest.map((f) => (
+            <li>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {audience && (
+      <section class="audience">
+        <h2>适合谁</h2>
+        <p>{audience}</p>
+        <p class="note">安装包暂不公开下载。</p>
+      </section>
+    )}
+  </article>
 </BaseLayout>
 
 <style>
-  .narrow {
-    max-width: calc(var(--measure) + var(--gutter) * 2);
+  /* One column edge for everything: header, shots, features and lists all start at the same x. */
+  .page {
+    max-width: 64rem;
+    padding-top: clamp(32px, 6vw, 56px);
   }
 
   .back {
-    margin-bottom: 28px;
     font-size: 14px;
     color: var(--text-3);
+    transition: color 0.15s var(--ease);
   }
 
   .back:hover {
     color: var(--text);
   }
 
+  .head {
+    margin-top: 32px;
+    max-width: 42rem;
+  }
+
+  .id {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  h1 {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .alias {
+    font-size: 0.55em;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-2);
+  }
+
+  .tagline {
+    margin-top: 4px;
+    font-size: 16px;
+    color: var(--text-2);
+  }
+
+  .intro {
+    margin-top: 24px;
+    font-size: 17px;
+    color: var(--text-2);
+  }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 0;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .facts > span + span::before {
+    content: '·';
+    margin: 0 10px;
+  }
+
   .actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 32px;
+    margin-top: 24px;
   }
 
-  .facts {
-    margin-top: 20px;
+  /* Screenshots sit in a quiet frame that matches the page in either theme. */
+  .window {
+    margin: 0;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--line-strong);
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero {
+    margin-top: 48px;
+  }
+
+  .feature {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: 56px;
+    margin-top: clamp(64px, 9vw, 96px);
+  }
+
+  /* Flipped rows mirror the columns too, so the shot always gets the wide one. */
+  .feature.flip {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .feature.flip .feature-text {
+    order: 2;
+  }
+
+  /* Wide, short shots (a table, a list) read better full width with the text above them. */
+  .feature.wide {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .feature.wide .feature-text {
+    order: 0;
+    max-width: 42rem;
+  }
+
+  .feature.wide .feature-shot {
+    max-width: none;
+  }
+
+  .feature-text h2 {
+    font-size: clamp(1.375rem, 2.6vw, 1.75rem);
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
+  .feature-text p {
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-2);
+  }
+
+  .feature-shot {
+    justify-self: center;
+    width: 100%;
+    max-width: 36rem;
+  }
+
+  .more,
+  .audience {
+    margin-top: clamp(64px, 9vw, 96px);
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+  }
+
+  .more h2,
+  .audience h2 {
+    font-size: 1.25rem;
+  }
+
+  .more ul {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 48px;
+  }
+
+  .more h3 {
+    font-size: 16px;
+  }
+
+  .more p {
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text-2);
+  }
+
+  .audience p {
+    margin-top: 12px;
+    max-width: 42rem;
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-2);
+  }
+
+  .audience .note {
+    margin-top: 8px;
     font-size: 14px;
     color: var(--text-3);
+  }
+
+  @media (max-width: 800px) {
+    .feature {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+    .feature.flip .feature-text {
+      order: 0;
+    }
+    .more ul {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .id {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+    }
+    .hero {
+      margin-top: 32px;
+    }
+    .window {
+      border-radius: var(--r-lg);
+    }
   }
 </style>

@@ -1,0 +1,54 @@
+---
+// A screenshot captured in both themes, shown to match the site theme.
+// Follows the OS setting by default and the header toggle when the reader picks one.
+interface Props {
+  base: string;
+  alt: string;
+  width: number;
+  height: number;
+  eager?: boolean;
+  class?: string;
+}
+
+const { base, alt, width, height, eager = false, class: className } = Astro.props;
+const loading = eager ? 'eager' : 'lazy';
+---
+
+<span class:list={['themed-shot', className]} style={`aspect-ratio:${width}/${height}`}>
+  <img class="for-light" src={`${base}-light.webp`} alt={alt} width={width} height={height} loading={loading} decoding="async" />
+  <img class="for-dark" src={`${base}-dark.webp`} alt="" aria-hidden="true" width={width} height={height} loading={loading} decoding="async" />
+</span>
+
+<style>
+  .themed-shot {
+    display: block;
+    width: 100%;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .for-dark {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .for-light {
+      display: none;
+    }
+    :global(:root:not([data-theme='light'])) .for-dark {
+      display: block;
+    }
+  }
+
+  :global(:root[data-theme='dark']) .for-light {
+    display: none;
+  }
+
+  :global(:root[data-theme='dark']) .for-dark {
+    display: block;
+  }
+</style>

@@ -52,44 +52,40 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
 
     <section class="topics">
       <h2>写得最多的方向</h2>
-      <ul>
-        {categories.map(([name, n]) => (
-          <li>
+      <ul class="bars">
+        {categories.map(([name, n], i) => (
+          <li style={`--w:${(n / max) * 100}%`} class:list={{ lead: i === 0 }}>
             <a href={`/categories/${name}/`}>
               <span class="name">{name}</span>
-              <span class="bar" style={`--w:${(n / max) * 100}%`} aria-hidden="true"></span>
-              <span class="count num">{n}</span>
+              <span class="bar" aria-hidden="true"><i></i></span>
+              <span class="count num">{n} 篇</span>
             </a>
           </li>
         ))}
       </ul>
-      {others > 0 && <p class="others">另有 <span class="num">{others}</span> 篇在其他分类，<a href="/tags/">查看全部</a></p>}
+      {others > 0 && <p class="others">另有 <span class="num">{others}</span> 篇在其他分类 · <a href="/tags/">查看全部分类</a></p>}
     </section>
 
     <section class="contact">
       <h2>找到我</h2>
       <div class="socials" data-contact={contact}>
-        <a class="social" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+        <a class="social" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub">
           <Icon name="github" size={20} />
+          <span class="tip" aria-hidden="true">GitHub</span>
         </a>
-        <button type="button" class="social" data-reveal="email" aria-label="邮箱" title="邮箱" aria-expanded="false">
+        <!-- href is filled in on first hover/focus, so the address is not in the HTML source -->
+        <a class="social" data-mail aria-label="发邮件">
           <Icon name="mail" size={20} />
-        </button>
-        <button type="button" class="social" data-reveal="qq" aria-label="QQ" title="QQ" aria-expanded="false">
-          <Icon name="qq" size={20} />
-        </button>
-        <a class="social" href="/subscribe/" aria-label="RSS 订阅" title="RSS 订阅">
-          <Icon name="rssSolid" size={18} />
+          <span class="tip" aria-hidden="true">发邮件</span>
         </a>
-
-        <div class="pop" role="dialog" aria-label="联系方式" hidden>
-          <span class="pk" data-pop-label></span>
-          <span class="pv num" data-pop-value></span>
-          <div class="pa">
-            <a class="mini" data-pop-mail>写邮件</a>
-            <button type="button" class="mini" data-pop-copy>复制</button>
-          </div>
-        </div>
+        <button type="button" class="social" data-qq aria-label="QQ，点击复制号码">
+          <Icon name="qq" size={20} />
+          <span class="tip" aria-hidden="true" data-qq-tip>QQ</span>
+        </button>
+        <a class="social" href="/subscribe/" aria-label="RSS 订阅">
+          <Icon name="rssSolid" size={18} />
+          <span class="tip" aria-hidden="true">RSS 订阅</span>
+        </a>
       </div>
     </section>
   </div>
@@ -99,69 +95,43 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
   // Contact details are stored encoded and only written into the page after a click,
   // so they never appear as plain text in the HTML that crawlers read.
   const root = document.querySelector<HTMLElement>('.socials[data-contact]');
-  const pop = root?.querySelector<HTMLElement>('.pop');
-  if (root && pop) {
-    const label = pop.querySelector('[data-pop-label]')!;
-    const value = pop.querySelector('[data-pop-value]')!;
-    const mail = pop.querySelector<HTMLAnchorElement>('[data-pop-mail]')!;
-    const copy = pop.querySelector<HTMLButtonElement>('[data-pop-copy]')!;
-    const triggers = [...root.querySelectorAll<HTMLButtonElement>('[data-reveal]')];
+  if (root) {
     let values: { email: string; qq: string } | null = null;
-    let current: HTMLButtonElement | null = null;
-
     const decode = () => {
       if (values) return values;
       const bytes = Uint8Array.from(atob(root.dataset.contact ?? ''), (c) => c.charCodeAt(0));
-      return (values = JSON.parse(new TextDecoder().decode(bytes)));
+      return (values = JSON.parse(new TextDecoder().decode(bytes)) as { email: string; qq: string });
     };
 
-    const close = () => {
-      pop.hidden = true;
-      current?.setAttribute('aria-expanded', 'false');
-      current = null;
-    };
+    // Email: a plain mailto link, with the address written in only when someone reaches for it.
+    const mail = root.querySelector<HTMLAnchorElement>('[data-mail]');
+    if (mail) {
+      const arm = () => {
+        if (!mail.href) mail.href = `mailto:${decode().email}`;
+      };
+      ['pointerenter', 'focus', 'touchstart'].forEach((t) => mail.addEventListener(t, arm, { passive: true }));
+      mail.addEventListener('click', arm);
+      mail.tabIndex = 0;
+    }
 
-    const open = (btn: HTMLButtonElement) => {
-      const field = btn.dataset.reveal as 'email' | 'qq';
-      const v = decode()![field];
-      label.textContent = field === 'email' ? '邮箱' : 'QQ';
-      value.textContent = v;
-      mail.style.display = field === 'email' ? '' : 'none';
-      if (field === 'email') mail.href = `mailto:${v}`;
-      copy.textContent = '复制';
-      current?.setAttribute('aria-expanded', 'false');
-      current = btn;
-      btn.setAttribute('aria-expanded', 'true');
-      // Anchor the popover under the icon that opened it.
-      pop.style.setProperty('--x', `${btn.offsetLeft + btn.offsetWidth / 2}px`);
-      pop.hidden = false;
-    };
-
-    triggers.forEach((btn) =>
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        current === btn && !pop.hidden ? close() : open(btn);
-      }),
-    );
-
-    copy.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(value.textContent ?? '');
-        copy.textContent = '已复制';
-      } catch {
-        copy.textContent = '复制失败';
-      }
-    });
-
-    pop.addEventListener('click', (e) => e.stopPropagation());
-    document.addEventListener('click', close);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !pop.hidden) {
-        const btn = current;
-        close();
-        btn?.focus();
-      }
-    });
+    // QQ: the tooltip shows the number; a click copies it.
+    const qq = root.querySelector<HTMLButtonElement>('[data-qq]');
+    const tip = qq?.querySelector<HTMLElement>('[data-qq-tip]');
+    if (qq && tip) {
+      const show = () => (tip.textContent = `QQ ${decode().qq} · 点击复制`);
+      ['pointerenter', 'focus'].forEach((t) => qq.addEventListener(t, show));
+      qq.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(decode().qq);
+          tip.textContent = `已复制 ${decode().qq}`;
+        } catch {
+          tip.textContent = `QQ ${decode().qq}`;
+        }
+        qq.dataset.pinned = '';
+      });
+      qq.addEventListener('pointerleave', () => delete qq.dataset.pinned);
+      qq.addEventListener('blur', () => delete qq.dataset.pinned);
+    }
   }
 </script>
 
@@ -209,17 +179,21 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
     margin-top: 56px;
   }
 
-  .topics ul {
+  /* Ranked bars: no grey track behind them, so the bars alone show the proportion.
+     The lead uses the logo ink; the rest are a soft tint of the same green. */
+  .bars {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
     gap: 4px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
   }
 
-  .topics a {
+  .bars a {
     display: grid;
-    grid-template-columns: 6rem 1fr 3rem;
+    grid-template-columns: 5rem minmax(0, 1fr) 3.5rem;
     align-items: center;
     gap: 16px;
     height: 36px;
@@ -230,33 +204,40 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
     transition: background-color 0.15s var(--ease);
   }
 
-  .topics a:hover {
+  .bars a:hover {
     background: var(--bg-sunk);
   }
 
   .bar {
-    height: 4px;
-    border-radius: 2px;
-    background: var(--line);
-    position: relative;
-    overflow: hidden;
+    display: block;
+    height: 12px;
   }
 
-  .bar::after {
-    content: '';
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: var(--w);
-    border-radius: 2px;
-    background: var(--text-3);
+  .bar i {
+    display: block;
+    width: max(var(--w), 6px);
+    height: 100%;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--logo-ink) 22%, var(--bg));
+    transition: background-color 0.15s var(--ease);
   }
 
-  .topics li:first-child .bar::after {
-    background: var(--logo-clay);
+  .bars a:hover .bar i {
+    background: color-mix(in srgb, var(--logo-ink) 40%, var(--bg));
+  }
+
+  .bars .lead .bar i {
+    background: var(--logo-ink);
+  }
+
+  .bars .lead .name,
+  .bars .lead .count {
+    color: var(--text);
+    font-weight: 500;
   }
 
   .others {
-    margin-top: 12px;
+    margin-top: 16px;
     font-size: 13px;
     color: var(--text-3);
   }
@@ -268,7 +249,7 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
   .count {
     text-align: right;
     color: var(--text-3);
-    font-size: 14px;
+    font-size: 13px;
   }
 
   /* Contact: a quiet row of solid marks; email and QQ reveal in a popover. */
@@ -279,6 +260,7 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
   }
 
   .social {
+    position: relative;
     display: grid;
     place-items: center;
     width: 44px;
@@ -293,85 +275,50 @@ const years = new Set(posts.map((p) => formatDate(p.data.date).slice(0, 4))).siz
   }
 
   .social:hover,
-  .social[aria-expanded='true'] {
+  .social:focus-visible {
     color: var(--text);
     border-color: var(--line-strong);
     background: var(--bg-sunk);
   }
 
-  .pop {
+  /* Tooltip: a small dark label above the icon, shown on hover and keyboard focus. */
+  .tip {
     position: absolute;
-    top: calc(100% + 8px);
-    left: clamp(0px, calc(var(--x, 0px) - 9rem), calc(100% - 18rem));
+    bottom: calc(100% + 8px);
+    left: 50%;
     z-index: 5;
-    width: min(18rem, 100%);
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 4px 12px;
-    padding: 12px 12px 12px 16px;
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    background: var(--surface);
-    box-shadow: var(--shadow-md);
-  }
-
-  .pop[hidden] {
-    display: none;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .pop:not([hidden]) {
-      animation: pop-in 0.18s var(--ease);
-    }
-  }
-
-  @keyframes pop-in {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-  }
-
-  .pk {
-    font-size: 13px;
-    color: var(--text-3);
-  }
-
-  .pv {
-    font-size: 15px;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    user-select: all;
-  }
-
-  .pa {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-top: 8px;
-  }
-
-  .mini {
-    display: inline-flex;
-    align-items: center;
-    height: 28px;
-    padding: 0 12px;
-    border: 1px solid var(--line-strong);
+    padding: 4px 8px;
     border-radius: var(--r-sm);
-    background: var(--surface);
-    color: var(--text-2);
-    font: 400 12px/1 var(--font);
-    cursor: pointer;
-    transition: border-color 0.15s var(--ease), color 0.15s var(--ease);
+    background: var(--text);
+    color: var(--bg);
+    font: 400 12px/1.5 var(--font);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 4px);
+    transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
   }
 
-  .mini:hover {
-    border-color: var(--text-3);
-    color: var(--text);
+  .tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -4px;
+    border: 4px solid transparent;
+    border-top-color: var(--text);
+  }
+
+  .social:hover .tip,
+  .social:focus-visible .tip,
+  .social[data-pinned] .tip {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* Leave room above the icons for the tooltip. */
+  .contact h2 {
+    margin-bottom: 44px;
   }
 
   @media (max-width: 640px) {

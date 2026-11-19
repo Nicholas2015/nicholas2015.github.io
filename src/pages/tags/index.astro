@@ -94,25 +94,28 @@ const tags = countBy(posts.flatMap((p) => p.data.tags));
     color: var(--accent);
   }
 
+  /* Same ranked bars as the about page: no track, lead in logo ink, the rest a soft tint. */
   .bar {
     position: relative;
-    height: 4px;
-    border-radius: 2px;
-    background: var(--line);
-    overflow: hidden;
+    height: 12px;
   }
 
   .bar::after {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
-    width: var(--w);
-    border-radius: 2px;
-    background: var(--text-3);
+    width: max(var(--w), 6px);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--logo-ink) 22%, var(--bg));
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .cat:hover .bar::after {
+    background: color-mix(in srgb, var(--logo-ink) 40%, var(--bg));
   }
 
   .cats li:first-child .bar::after {
-    background: var(--logo-clay);
+    background: var(--logo-ink);
   }
 
   .n {

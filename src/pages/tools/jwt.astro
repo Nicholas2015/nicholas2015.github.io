@@ -1,0 +1,249 @@
+---
+import WebToolLayout from '../../layouts/WebToolLayout.astro';
+---
+
+<WebToolLayout slug="jwt">
+  <div class="wt-grid">
+    <div class="wt-pane">
+      <div class="wt-label">JWT <button type="button" class="wt-mini" data-sample>示例</button></div>
+      <textarea class="wt-text token" data-token spellcheck="false" placeholder="粘贴 eyJhbGciOi… 开头的 token，Bearer 前缀会自动去掉"></textarea>
+
+      <div class="verify">
+        <div class="wt-label">验证签名 <span class="alg" data-alg></span></div>
+        <textarea class="wt-text key" data-key spellcheck="false" placeholder="HS256/384/512 填共享密钥；RS/PS/ES 填 PEM 公钥（-----BEGIN PUBLIC KEY-----）或 JWK"></textarea>
+        <div class="verify-row">
+          <label class="opt" data-b64-opt><input type="checkbox" data-key-b64 /> 密钥是 Base64 编码的</label>
+          <span class="spacer"></span>
+          <button type="button" class="wt-btn primary" data-verify>验证</button>
+        </div>
+        <p class="result" data-result aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="wt-pane">
+      <div class="wt-label">Header</div>
+      <pre class="wt-text out" data-header data-placeholder="粘贴 token 后显示"></pre>
+      <div class="wt-label">Payload</div>
+      <pre class="wt-text out" data-payload data-placeholder="粘贴 token 后显示"></pre>
+      <dl class="claims" data-claims></dl>
+    </div>
+  </div>
+  <p class="wt-status" data-status aria-live="polite"></p>
+</WebToolLayout>
+
+<style>
+  :global(.wt-text.token) {
+    min-height: 180px;
+    word-break: break-all;
+  }
+
+  :global(.wt-text.key) {
+    min-height: 110px;
+  }
+
+  :global(.wt-text.out) {
+    min-height: 128px;
+    margin: 0 0 16px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: auto;
+    resize: none;
+  }
+
+  /* Empty panes read as faint placeholders instead of collapsing to a hairline. */
+  :global(.wt-text.out:empty)::before {
+    content: attr(data-placeholder);
+    color: var(--text-3);
+  }
+
+  .verify {
+    margin-top: 24px;
+  }
+
+  .verify-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  .opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+  }
+
+  .opt input {
+    accent-color: var(--text);
+  }
+
+  .alg {
+    font: 500 12px var(--mono);
+    color: var(--text-2);
+  }
+
+  .result {
+    min-height: 24px;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+
+  .result.ok {
+    color: color-mix(in srgb, #2f8a5b 85%, var(--text));
+  }
+
+  .result.err {
+    color: color-mix(in srgb, #c2410c 85%, var(--text));
+  }
+
+  .claims {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 16px;
+    margin: 0;
+    font-size: 13px;
+  }
+
+  /* Rows are written by the script, so they need :global to pick up these styles. */
+  .claims :global(dt) {
+    font-family: var(--mono);
+    color: var(--text-3);
+  }
+
+  .claims :global(dd) {
+    margin: 0;
+    color: var(--text-2);
+  }
+
+  .claims :global(.bad) {
+    color: color-mix(in srgb, #c2410c 85%, var(--text));
+  }
+</style>
+
+<script>
+  import { compactVerify, importJWK, importSPKI, importX509, errors } from 'jose';
+
+  const $ = <T extends Element>(s: string) => document.querySelector<T>(s)!;
+  const tokenEl = $<HTMLTextAreaElement>('[data-token]');
+  const headerEl = $<HTMLElement>('[data-header]');
+  const payloadEl = $<HTMLElement>('[data-payload]');
+  const claimsEl = $<HTMLElement>('[data-claims]');
+  const statusEl = $<HTMLElement>('[data-status]');
+  const keyEl = $<HTMLTextAreaElement>('[data-key]');
+  const keyB64 = $<HTMLInputElement>('[data-key-b64]');
+  const resultEl = $<HTMLElement>('[data-result]');
+  const algEl = $<HTMLElement>('[data-alg]');
+
+  const b64urlToBytes = (s: string) => {
+    const t = s.replace(/-/g, '+').replace(/_/g, '/');
+    return Uint8Array.from(atob(t + '='.repeat((4 - (t.length % 4)) % 4)), (c) => c.charCodeAt(0));
+  };
+  const decodePart = (s: string) => JSON.parse(new TextDecoder().decode(b64urlToBytes(s)));
+
+  const setStatus = (el: HTMLElement, text: string, kind: '' | 'ok' | 'err', base = 'wt-status') => {
+    el.textContent = text;
+    el.className = `${base} ${kind}`;
+  };
+
+  const fmtTime = (sec: number) => {
+    const d = new Date(sec * 1000);
+    const rel = Math.round((sec * 1000 - Date.now()) / 60000);
+    const span = Math.abs(rel) < 60 ? `${Math.abs(rel)} 分钟` : Math.abs(rel) < 2880 ? `${Math.round(Math.abs(rel) / 60)} 小时` : `${Math.round(Math.abs(rel) / 1440)} 天`;
+    return `${d.toLocaleString('zh-CN', { hour12: false })}（${rel >= 0 ? `${span}后` : `${span}前`}）`;
+  };
+
+  let header: Record<string, unknown> | null = null;
+  let token = '';
+
+  const parse = () => {
+    token = tokenEl.value.trim().replace(/^Bearer\s+/i, '');
+    header = null;
+    headerEl.textContent = '';
+    payloadEl.textContent = '';
+    claimsEl.innerHTML = '';
+    algEl.textContent = '';
+    setStatus(resultEl, '', '', 'result');
+    if (!token) { setStatus(statusEl, '', ''); return; }
+
+    const parts = token.split('.');
+    if (parts.length === 5) { setStatus(statusEl, '这是加密的 JWT（JWE，五段），内容需要解密密钥才能查看，此工具不支持', 'err'); return; }
+    if (parts.length !== 3) { setStatus(statusEl, `JWT 应该是用点号分开的三段，这里有 ${parts.length} 段`, 'err'); return; }
+
+    try {
+      header = decodePart(parts[0]);
+    } catch { setStatus(statusEl, '第一段（header）不是有效的 Base64URL 编码 JSON', 'err'); return; }
+    let payload: Record<string, unknown>;
+    try {
+      payload = decodePart(parts[1]);
+    } catch { setStatus(statusEl, '第二段（payload）不是有效的 Base64URL 编码 JSON', 'err'); return; }
+
+    headerEl.textContent = JSON.stringify(header, null, 2);
+    payloadEl.textContent = JSON.stringify(payload, null, 2);
+    const alg = String(header!.alg ?? '');
+    algEl.textContent = alg;
+    keyB64.closest('label')!.hidden = !alg.startsWith('HS');
+
+    // Spell out the time claims, and flag the ones that make the token unusable now.
+    const now = Date.now() / 1000;
+    const rows: string[] = [];
+    const add = (k: string, v: string, bad = false) => rows.push(`<dt>${k}</dt><dd class="${bad ? 'bad' : ''}">${v}</dd>`);
+    if (typeof payload.exp === 'number') add('exp', `${fmtTime(payload.exp)}${payload.exp < now ? ' · 已过期' : ''}`, payload.exp < now);
+    if (typeof payload.nbf === 'number') add('nbf', `${fmtTime(payload.nbf)}${payload.nbf > now ? ' · 还未生效' : ''}`, payload.nbf > now);
+    if (typeof payload.iat === 'number') add('iat', fmtTime(payload.iat));
+    claimsEl.innerHTML = rows.join('');
+
+    setStatus(statusEl, alg === 'none' ? '已解析 · 算法为 none，这个 token 没有签名，不应被信任' : `已解析 · ${alg} 签名`, alg === 'none' ? 'err' : 'ok');
+  };
+
+  const importKey = async (alg: string, raw: string) => {
+    const k = raw.trim();
+    if (alg.startsWith('HS')) {
+      return keyB64.checked ? b64urlToBytes(k.replace(/\s+/g, '').replace(/=+$/, '')) : new TextEncoder().encode(k);
+    }
+    if (k.startsWith('{')) return importJWK(JSON.parse(k), alg);
+    if (k.includes('BEGIN CERTIFICATE')) return importX509(k, alg);
+    if (k.includes('BEGIN PUBLIC KEY')) return importSPKI(k, alg);
+    if (k.includes('PRIVATE KEY')) throw new Error('这里需要公钥，不要粘贴私钥');
+    throw new Error('无法识别的公钥格式，需要 PEM（BEGIN PUBLIC KEY）、证书或 JWK');
+  };
+
+  const verify = async () => {
+    if (!header) { setStatus(resultEl, '先粘贴一个有效的 JWT', 'err', 'result'); return; }
+    const alg = String(header.alg ?? '');
+    if (!alg || alg === 'none') { setStatus(resultEl, '这个 token 没有签名，无法验证', 'err', 'result'); return; }
+    if (!keyEl.value.trim()) { setStatus(resultEl, alg.startsWith('HS') ? '请填写共享密钥' : '请填写公钥', 'err', 'result'); return; }
+    try {
+      const key = await importKey(alg, keyEl.value);
+      await compactVerify(token, key, { algorithms: [alg] });
+      setStatus(resultEl, '签名有效 · 内容没有被篡改，且是用这把密钥签发的', 'ok', 'result');
+    } catch (e) {
+      const msg =
+        e instanceof errors.JWSSignatureVerificationFailed ? '签名无效 · 密钥不对，或者内容被改过' :
+        e instanceof errors.JOSENotSupported ? `不支持的算法：${alg}` :
+        `无法验证：${(e as Error).message}`;
+      setStatus(resultEl, msg, 'err', 'result');
+    }
+  };
+
+  // A real HS256 token signed with the key "your-256-bit-secret", so the sample verifies.
+  const SAMPLE =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+
+  let t: ReturnType<typeof setTimeout>;
+  tokenEl.addEventListener('input', () => { clearTimeout(t); t = setTimeout(parse, 150); });
+  $('[data-sample]').addEventListener('click', () => {
+    tokenEl.value = SAMPLE;
+    keyEl.value = 'your-256-bit-secret';
+    keyB64.checked = false;
+    parse();
+  });
+  $('[data-verify]').addEventListener('click', verify);
+  keyEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) verify(); });
+</script>

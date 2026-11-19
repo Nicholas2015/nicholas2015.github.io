@@ -1,0 +1,316 @@
+---
+// Shell for the in-browser tools: title, a privacy line, the tool itself, and links to the others.
+import BaseLayout from './BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { WEB_TOOLS, type WebToolSlug } from '../lib/webtools';
+
+interface Props {
+  slug: WebToolSlug;
+}
+
+const { slug } = Astro.props;
+const tool = WEB_TOOLS.find((t) => t.slug === slug)!;
+const others = WEB_TOOLS.filter((t) => t.slug !== slug);
+---
+
+<BaseLayout title={tool.name} description={tool.tagline}>
+  <div class="container wt">
+    <a class="back arrow-link" href="/tools/"><Icon name="arrowLeft" size={16} /> 全部工具</a>
+    <header class="wt-head">
+      <h1>{tool.name}</h1>
+      <p class="tagline">{tool.tagline}</p>
+      <p class="local">所有处理都在你的浏览器里完成，内容不会上传</p>
+    </header>
+
+    <div class="wt-body">
+      <slot />
+    </div>
+
+    <nav class="wt-others" aria-label="其他在线工具">
+      <h2>其他工具</h2>
+      <ul>
+        {others.map((t) => (
+          <li>
+            <a href={`/tools/${t.slug}/`}>
+              <span class="n">{t.name}</span>
+              <span class="d">{t.tagline}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</BaseLayout>
+
+<style>
+  .wt {
+    padding-top: clamp(32px, 6vw, 56px);
+  }
+
+  .back {
+    font-size: 14px;
+    color: var(--text-3);
+    transition: color 0.15s var(--ease);
+  }
+
+  .back:hover {
+    color: var(--text);
+  }
+
+  .wt-head {
+    margin-top: 24px;
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    letter-spacing: -0.02em;
+  }
+
+  .tagline {
+    margin-top: 6px;
+    color: var(--text-2);
+  }
+
+  .local {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .local::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--logo-ink);
+  }
+
+  .wt-body {
+    margin-top: 32px;
+  }
+
+  .wt-others {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+
+  .wt-others h2 {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-3);
+  }
+
+  .wt-others ul {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: 8px 24px;
+  }
+
+  .wt-others a {
+    display: block;
+    padding: 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .wt-others a:hover {
+    background: var(--bg-sunk);
+  }
+
+  .wt-others .n {
+    display: block;
+    font-weight: 500;
+  }
+
+  .wt-others .d {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  /* Shared controls for every tool. Global so each tool page can use them. */
+  :global(.wt-toolbar) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  :global(.wt-toolbar .spacer) {
+    flex: 1;
+  }
+
+  :global(.wt-btn) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--text);
+    font: 500 14px/1 var(--font);
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease);
+  }
+
+  :global(.wt-btn:hover) {
+    border-color: var(--text-3);
+  }
+
+  :global(.wt-btn.primary) {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  :global(.wt-btn.primary:hover) {
+    background: color-mix(in srgb, var(--text) 86%, var(--bg));
+  }
+
+  :global(.wt-btn:disabled) {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  :global(.wt-seg) {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: var(--r-md);
+    background: var(--bg-sunk);
+    border: 1px solid var(--line);
+  }
+
+  :global(.wt-seg button) {
+    height: 30px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-2);
+    font: 400 13px/1 var(--font);
+    cursor: pointer;
+  }
+
+  :global(.wt-seg button[aria-pressed='true']) {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  :global(.wt-select) {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--text);
+    font: 400 14px var(--font);
+  }
+
+  :global(.wt-grid) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  :global(.wt-pane) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  :global(.wt-label) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: 28px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  :global(.wt-text) {
+    width: 100%;
+    min-height: 420px;
+    padding: 14px 16px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line-strong);
+    background: var(--code-bg);
+    color: var(--text);
+    font: 400 13.5px/1.65 var(--mono);
+    resize: vertical;
+    tab-size: 2;
+  }
+
+  :global(.wt-text:focus) {
+    outline: 2px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    outline-offset: -1px;
+  }
+
+  :global(.wt-text[readonly]) {
+    background: var(--surface);
+  }
+
+  :global(.wt-input) {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--text);
+    font: 400 14px var(--mono);
+  }
+
+  :global(.wt-status) {
+    min-height: 24px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  :global(.wt-status.ok) {
+    color: color-mix(in srgb, #2f8a5b 85%, var(--text));
+  }
+
+  :global(.wt-status.err) {
+    color: color-mix(in srgb, #c2410c 85%, var(--text));
+  }
+
+  :global(.wt-mini) {
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--text-2);
+    font: 400 12px/1 var(--font);
+    cursor: pointer;
+  }
+
+  :global(.wt-mini:hover) {
+    color: var(--text);
+  }
+
+  @media (max-width: 860px) {
+    :global(.wt-grid) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    :global(.wt-text) {
+      min-height: 240px;
+    }
+  }
+</style>

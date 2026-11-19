@@ -1,0 +1,145 @@
+---
+import WebToolLayout from '../../layouts/WebToolLayout.astro';
+---
+
+<WebToolLayout slug="json">
+  <div class="wt-toolbar">
+    <button type="button" class="wt-btn primary" data-act="format">格式化</button>
+    <button type="button" class="wt-btn" data-act="minify">压缩</button>
+    <button type="button" class="wt-btn" data-act="sort">按键排序</button>
+    <span class="spacer"></span>
+    <label class="opt">缩进
+      <select class="wt-select" data-indent>
+        <option value="2" selected>2 空格</option>
+        <option value="4">4 空格</option>
+        <option value="tab">Tab</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="wt-grid">
+    <div class="wt-pane">
+      <div class="wt-label">输入 <button type="button" class="wt-mini" data-act="sample">示例</button></div>
+      <textarea class="wt-text" data-in spellcheck="false" placeholder='粘贴 JSON，例如 {"name": "白云阁"}'></textarea>
+    </div>
+    <div class="wt-pane">
+      <div class="wt-label">结果 <button type="button" class="wt-mini" data-copy>复制</button></div>
+      <textarea class="wt-text" data-out readonly spellcheck="false"></textarea>
+    </div>
+  </div>
+  <p class="wt-status" data-status aria-live="polite"></p>
+</WebToolLayout>
+
+<style>
+  .opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+</style>
+
+<script>
+  const $ = <T extends Element>(s: string) => document.querySelector<T>(s)!;
+  const input = $<HTMLTextAreaElement>('[data-in]');
+  const output = $<HTMLTextAreaElement>('[data-out]');
+  const status = $<HTMLElement>('[data-status]');
+  const indentSel = $<HTMLSelectElement>('[data-indent]');
+
+  const indent = () => (indentSel.value === 'tab' ? '\t' : Number(indentSel.value));
+
+  const setStatus = (text: string, kind: '' | 'ok' | 'err' = '') => {
+    status.textContent = text;
+    status.className = `wt-status ${kind}`;
+  };
+
+  // Turn a JSON.parse message into a line/column. Browsers word it differently
+  // ("at position 42", "line 3 column 5"), so accept either and work out the other.
+  const locate = (src: string, err: Error) => {
+    const lc = /line (\d+) column (\d+)/i.exec(err.message);
+    if (lc) {
+      const line = +lc[1], col = +lc[2];
+      const pos = src.split('\n').slice(0, line - 1).reduce((n, l) => n + l.length + 1, 0) + col - 1;
+      return { line, col, pos };
+    }
+    const m = /position (\d+)/i.exec(err.message);
+    if (!m) return null;
+    const pos = +m[1];
+    const before = src.slice(0, pos).split('\n');
+    return { line: before.length, col: before.at(-1)!.length + 1, pos };
+  };
+
+  // Plain-language reasons for the mistakes people actually make when pasting JSON.
+  const hint = (src: string, pos?: number) => {
+    const c = pos !== undefined ? src[pos] : '';
+    const prev = pos !== undefined ? src.slice(0, pos).trimEnd().at(-1) : '';
+    if (c === "'" ) return 'JSON 的字符串要用双引号，不能用单引号';
+    if ((c === '}' || c === ']') && prev === ',') return '最后一项后面多了一个逗号';
+    if (pos !== undefined && /[A-Za-z_$]/.test(c)) return '键名或字符串缺少双引号';
+    if (pos !== undefined && pos >= src.trimEnd().length) return '内容不完整，可能少了 } 或 ]';
+    if (c === '/' ) return 'JSON 不支持注释';
+    return '';
+  };
+
+  const sortKeys = (v: unknown): unknown =>
+    Array.isArray(v)
+      ? v.map(sortKeys)
+      : v && typeof v === 'object'
+        ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys((v as Record<string, unknown>)[k])]))
+        : v;
+
+  const run = (mode: 'format' | 'minify' | 'sort') => {
+    const src = input.value;
+    if (!src.trim()) {
+      output.value = '';
+      setStatus('');
+      return;
+    }
+    try {
+      let data = JSON.parse(src);
+      if (mode === 'sort') data = sortKeys(data);
+      output.value = mode === 'minify' ? JSON.stringify(data) : JSON.stringify(data, null, indent());
+      const kind = Array.isArray(data) ? `数组，${data.length} 项` : data && typeof data === 'object' ? `对象，${Object.keys(data).length} 个键` : typeof data;
+      setStatus(`JSON 有效 · ${kind} · ${new Blob([output.value]).size} 字节`, 'ok');
+    } catch (e) {
+      const err = e as Error;
+      const at = locate(src, err);
+      output.value = '';
+      const why = hint(src, at?.pos);
+      setStatus(at ? `第 ${at.line} 行第 ${at.col} 列有错误${why ? `：${why}` : `（${err.message}）`}` : `格式错误：${err.message}`, 'err');
+      if (at?.pos !== undefined) {
+        input.focus();
+        input.setSelectionRange(at.pos, Math.min(at.pos + 1, src.length));
+      }
+    }
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const act = b.dataset.act!;
+      if (act === 'sample') {
+        input.value = '{"site":"白云阁","posts":111,"tags":["Spring AI","RAG","Kafka"],"author":{"name":"会编程的吕洞宾","since":2014}}';
+        run('format');
+        return;
+      }
+      run(act as 'format' | 'minify' | 'sort');
+    }),
+  );
+  indentSel.addEventListener('change', () => output.value && run('format'));
+
+  // Validate as you type, without rewriting the output on every key.
+  let t: ReturnType<typeof setTimeout>;
+  input.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => run('format'), 300);
+  });
+
+  $<HTMLButtonElement>('[data-copy]').addEventListener('click', async (e) => {
+    const b = e.currentTarget as HTMLButtonElement;
+    if (!output.value) return;
+    await navigator.clipboard.writeText(output.value).catch(() => {});
+    b.textContent = '已复制';
+    setTimeout(() => (b.textContent = '复制'), 1400);
+  });
+</script>

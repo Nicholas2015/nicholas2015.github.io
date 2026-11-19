@@ -242,9 +242,11 @@ a.tag:hover {
   line-height: 1.15;
 }
 
+/* Wide enough for a one-line subtitle; `pretty` keeps a lone last character from dropping to its own line. */
 .page-head p {
   margin-top: 16px;
-  max-width: 36rem;
+  max-width: 44rem;
+  text-wrap: pretty;
   color: var(--text-2);
   font-size: clamp(1rem, 1.6vw, 1.125rem);
 }

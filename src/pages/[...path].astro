@@ -41,8 +41,8 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
 ---
 
 <BaseLayout title={title} description={post.data.description ?? excerpt(post.body, 150)}>
-  <article>
-    <header class="container post-head">
+  <article class:list={['container post', { 'has-toc': toc.length >= 3 }]}>
+    <header class="post-head">
       <a class="back arrow-link" href="/archives/"><Icon name="arrowLeft" size={16} /> 全部文章</a>
       <h1 class="rise">{title}</h1>
       <div class="meta rise rise-2">
@@ -64,7 +64,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
       </div>
     </header>
 
-    <div class:list={['container layout', { 'has-toc': toc.length >= 3 }]}>
+    <div class:list={['layout']}>
       <div class:list={['prose', { 'drop-title': dupTitle }]}>
         <Content />
       </div>
@@ -83,7 +83,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
       )}
     </div>
 
-    <nav class="container pager" aria-label="上一篇和下一篇">
+    <nav class="pager" aria-label="上一篇和下一篇">
       {older ? (
         <a href={postUrl(older)}>
           <span class="dir"><Icon name="arrowLeft" size={14} /> 上一篇</span>
@@ -125,8 +125,23 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
 </script>
 
 <style>
+  /* One frame for the header, the body and the pager, so their left edges line up.
+     With a TOC the frame is body + rail; without one it is just the reading measure. */
+  .post {
+    --rail: 15rem;
+    --gap-rail: 64px;
+    --frame: var(--measure);
+  }
+
+  @media (min-width: 1121px) {
+    .post.has-toc {
+      --frame: calc(var(--measure) + var(--gap-rail) + var(--rail));
+    }
+  }
+
   .post-head {
-    max-width: calc(var(--measure) + var(--gutter) * 2);
+    max-width: var(--frame);
+    margin-inline: auto;
     padding-top: clamp(40px, 7vw, 80px);
     padding-bottom: clamp(32px, 5vw, 48px);
   }
@@ -146,6 +161,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
     font-size: clamp(2rem, 4.6vw, 2.75rem);
     line-height: 1.2;
     letter-spacing: -0.02em;
+    text-wrap: balance;
   }
 
   .meta {
@@ -176,17 +192,18 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
   .layout {
     display: grid;
     grid-template-columns: minmax(0, var(--measure));
-    justify-content: center;
     gap: 64px;
     padding-top: 40px;
     border-top: 1px solid var(--line);
-    max-width: none;
+    max-width: var(--frame);
+    margin-inline: auto;
   }
 
-  /* The TOC sits to the right; offset so the column still lines up with the header. */
-  .layout.has-toc {
-    grid-template-columns: minmax(0, var(--measure)) 15rem;
-    padding-left: calc(15rem + 64px + var(--gutter));
+  /* The TOC rides in the rail, so the reading column keeps its width and stays centred with the header. */
+  @media (min-width: 1121px) {
+    .has-toc .layout {
+      grid-template-columns: minmax(0, var(--measure)) var(--rail);
+    }
   }
 
   .layout .prose {
@@ -251,7 +268,8 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
   }
 
   .pager {
-    max-width: calc(var(--measure) + var(--gutter) * 2);
+    max-width: var(--frame);
+    margin-inline: auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
@@ -293,10 +311,10 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
     align-items: flex-end;
   }
 
-  @media (max-width: 1340px) {
-    .layout.has-toc {
+  /* Below this width the rail no longer fits beside the text, so the TOC drops and the frame narrows with it. */
+  @media (max-width: 1120px) {
+    .has-toc .layout {
       grid-template-columns: minmax(0, var(--measure));
-      padding-left: var(--gutter);
     }
     .toc {
       display: none;

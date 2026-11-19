@@ -1,17 +1,39 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+// Posts written by hand often use the Hexo shape: `categories:` instead of `category:`,
+// a bare string for tags, a date like `2026-11-19 20:53:41` meant as China time,
+// and a leading `# Title` that repeats the title. Accept those and normalize here,
+// so a dropped-in file builds without editing.
+const CATEGORY_ALIAS: Record<string, string> = { ai: 'AI', JAVA基础: 'java', 测试: '随笔' };
+const TAG_ALIAS: Record<string, string | null> = { ai: null, AI: null, database: 'mysql', test: null };
+const list = (v: unknown) => (v == null ? [] : Array.isArray(v) ? v.map(String) : [String(v)]);
+
 const blog = defineCollection({
   loader: glob({ base: './src/content/blog', pattern: '**/[^_]*.{md,mdx}' }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    updated: z.coerce.date().optional(),
-    description: z.string().optional(),
-    category: z.string().default('未分类'),
-    tags: z.array(z.string()).default([]),
-    draft: z.boolean().default(false),
-  }),
+  schema: z
+    .object({
+      title: z.string(),
+      date: z.union([z.date(), z.string()]),
+      updated: z.coerce.date().optional(),
+      description: z.string().optional(),
+      category: z.string().optional(),
+      categories: z.unknown().optional(),
+      tags: z.unknown().optional(),
+      draft: z.boolean().default(false),
+    })
+    .transform(({ categories, ...d }) => {
+      const rawCategory = d.category ?? list(categories)[0] ?? '未分类';
+      const category = CATEGORY_ALIAS[rawCategory] ?? rawCategory;
+      const tags = [...new Set(list(d.tags).map((t) => (t in TAG_ALIAS ? TAG_ALIAS[t] : t)).filter((t): t is string => !!t))];
+      // A quoted date string without a zone is China time. An unquoted `2026-11-19 20:53:41` is parsed by
+      // YAML as UTC before it reaches here, so posts should write `2026-11-19T20:53:41+08:00`.
+      const date =
+        d.date instanceof Date
+          ? d.date
+          : new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(d.date) ? d.date : `${d.date.trim().replace(' ', 'T')}+08:00`);
+      return { ...d, title: d.title.replace(/\s*_\s*/g, '，'), date, category, tags };
+    }),
 });
 
 const tools = defineCollection({

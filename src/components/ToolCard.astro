@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import ThemedShot from './ThemedShot.astro';
 import { PLATFORM_LABEL, STATUS_LABEL, type Tool } from '../lib/content';
 
 interface Props {
@@ -7,23 +8,27 @@ interface Props {
 }
 
 const { tool } = Astro.props;
-const { name, tagline, status, platforms } = tool.data;
+const { name, alias, tagline, status, platforms, icon, hero, version } = tool.data;
 ---
 
 <a class="tool-card" href={`/tools/${tool.id}/`}>
-  <div class="shot" aria-hidden="true">
-    <!-- Screenshot slot, 16:9. Replace with the app's real window capture. -->
+  <div class="shot">
+    {hero && <ThemedShot {...hero} alt="" />}
   </div>
   <div class="body">
     <div class="top">
-      <h3>{name}</h3>
-      {status !== 'stable' && <span class="tag">{STATUS_LABEL[status]}</span>}
+      {icon && <img class="icon" src={icon} alt="" width="40" height="40" />}
+      <div class="title">
+        <h3>{name}{alias && <span class="alias">{alias}</span>}</h3>
+        <p class="meta">
+          {platforms.map((p) => PLATFORM_LABEL[p]).join(' · ')}
+          {version && <> · v<span class="num">{version}</span></>}
+          {status !== 'stable' && <> · {STATUS_LABEL[status]}</>}
+        </p>
+      </div>
     </div>
-    <p>{tagline}</p>
-    <div class="foot">
-      <span class="platforms">{platforms.map((p) => PLATFORM_LABEL[p]).join(' · ')}</span>
-      <span class="go arrow-link">了解更多 <Icon name="arrowRight" size={16} /></span>
-    </div>
+    <p class="tagline">{tagline}</p>
+    <span class="go arrow-link">了解更多 <Icon name="arrowRight" size={16} /></span>
   </div>
 </a>
 
@@ -43,54 +48,79 @@ const { name, tagline, status, platforms } = tool.data;
     box-shadow: var(--shadow-md);
   }
 
+  /* The real app at the size it's drawn, cropped to its top-left where the navigation lives. */
   .shot {
+    position: relative;
     aspect-ratio: 16 / 9;
+    overflow: hidden;
     background: var(--bg-sunk);
     border-bottom: 1px solid var(--line);
+  }
+
+  .shot :global(.themed-shot) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 150%;
+    transition: transform 0.4s var(--ease);
+    transform-origin: top left;
+  }
+
+  .tool-card:hover .shot :global(.themed-shot) {
+    transform: scale(1.015);
   }
 
   .body {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     padding: 20px 24px 24px;
     flex: 1;
   }
 
   .top {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 12px;
   }
 
-  h3 {
-    font-size: 18px;
+  .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
   }
 
-  p {
+  h3 {
+    font-size: 18px;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .alias {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-2);
+  }
+
+  .meta {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .tagline {
     color: var(--text-2);
     font-size: 15px;
     line-height: 1.6;
     flex: 1;
   }
 
-  .foot {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-top: 8px;
-    font-size: 14px;
-  }
-
-  .platforms {
-    color: var(--text-3);
-  }
-
   .go {
-    color: var(--text);
+    font-size: 14px;
     font-weight: 500;
+    color: var(--text);
   }
 
   .tool-card:hover .go :global(svg) {

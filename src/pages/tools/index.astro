@@ -6,11 +6,11 @@ import { getTools } from '../../lib/content';
 const tools = await getTools();
 ---
 
-<BaseLayout title="小工具" description="自己写的桌面小工具，免费下载使用">
+<BaseLayout title="小工具" description="自己写、自己每天在用的桌面小工具">
   <div class="container">
     <header class="page-head">
       <h1 class="rise">小工具</h1>
-      <p class="rise rise-2">平时顺手写的桌面小工具，解决自己遇到的小麻烦，也分享给你</p>
+      <p class="rise rise-2">写博客和维护服务器时顺手做的桌面工具，先解决自己的麻烦，也分享给你</p>
     </header>
 
     {tools.length > 0 ? (
@@ -29,8 +29,8 @@ const tools = await getTools();
 <style>
   .tool-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+    gap: 24px;
   }
 
   .empty {

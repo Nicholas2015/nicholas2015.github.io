@@ -17,11 +17,11 @@ const featured = (tools.some((t) => t.data.featured) ? tools.filter((t) => t.dat
 const [lead, ...rest] = posts;
 const recent = rest.slice(0, 6);
 
-// Topic shelves: the biggest category leads with more posts; the next three sit beside it.
-const shelves = countBy(posts.map((p) => p.data.category))
-  .slice(0, 4)
-  .map(([name, n], i) => ({ name, n, items: posts.filter((p) => p.data.category === name).slice(0, i === 0 ? 6 : 3) }));
-const [mainShelf, ...sideShelves] = shelves;
+// Topic tabs: categories with a real body of posts, newest six each.
+const topics = countBy(posts.map((p) => p.data.category))
+  .filter(([, n]) => n >= 3)
+  .slice(0, 6)
+  .map(([name, n]) => ({ name, n, items: posts.filter((p) => p.data.category === name).slice(0, 6) }));
 
 const firstYear = posts.at(-1)?.data.date.getFullYear();
 const md = (p: Post) => formatDate(p.data.date).slice(5);
@@ -109,41 +109,36 @@ ollama serve`;
       <h2>按方向读</h2>
       <a class="more arrow-link" href="/tags/">全部分类和标签 <Icon name="arrowRight" size={16} /></a>
     </div>
-    <div class="shelves">
-      <section class="shelf shelf-main">
-        <a class="shelf-head" href={`/categories/${mainShelf.name}/`}>
-          <h3>{mainShelf.name}</h3>
-          <span class="num">{mainShelf.n} 篇</span>
-        </a>
-        <ul>
-          {mainShelf.items.map((p) => (
-            <li>
-              <a href={postUrl(p)}>
-                <span class="d num">{md(p)}</span>
-                <span class="t">{p.data.title}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-        <a class="shelf-more arrow-link" href={`/categories/${mainShelf.name}/`}>{mainShelf.name} 全部 {mainShelf.n} 篇 <Icon name="arrowRight" size={14} /></a>
-      </section>
-      <div class="side">
-        {sideShelves.map((s) => (
-          <section class="shelf">
-            <a class="shelf-head" href={`/categories/${s.name}/`}>
-              <h3>{s.name}</h3>
-              <span class="num">{s.n} 篇</span>
-            </a>
-            <ul>
-              {s.items.map((p) => (
-                <li>
-                  <a href={postUrl(p)}><span class="t">{p.data.title}</span></a>
-                </li>
-              ))}
-            </ul>
-          </section>
+    <div class="topics" data-topics>
+      <div class="tabs" role="tablist" aria-label="按方向筛选">
+        {topics.map((t, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`topic-tab-${i}`}
+            aria-controls={`topic-panel-${i}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+          >
+            {t.name}<span class="n num">{t.n}</span>
+          </button>
         ))}
       </div>
+      {topics.map((t, i) => (
+        <div class="panel" role="tabpanel" id={`topic-panel-${i}`} aria-labelledby={`topic-tab-${i}`} hidden={i !== 0}>
+          <ul>
+            {t.items.map((p) => (
+              <li>
+                <a href={postUrl(p)}>
+                  <span class="d num">{md(p)}</span>
+                  <span class="t">{p.data.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a class="panel-more arrow-link" href={`/categories/${t.name}/`}>{t.name} 全部 <span class="num">{t.n}</span> 篇 <Icon name="arrowRight" size={14} /></a>
+        </div>
+      ))}
     </div>
   </section>
 
@@ -160,6 +155,31 @@ ollama serve`;
   )}
   <CodeBlocks />
 </BaseLayout>
+
+<script>
+  // Tabs for the topic list: click or arrow keys switch the panel, following the WAI-ARIA tabs pattern.
+  for (const root of document.querySelectorAll<HTMLElement>('[data-topics]')) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+    const select = (i: number, focus = false) => {
+      tabs.forEach((t, j) => {
+        t.setAttribute('aria-selected', String(i === j));
+        t.tabIndex = i === j ? 0 : -1;
+      });
+      panels.forEach((p, j) => (p.hidden = i !== j));
+      if (focus) tabs[i].focus();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(i));
+      t.addEventListener('keydown', (e) => {
+        const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+        if (next === undefined) return;
+        e.preventDefault();
+        select((next + tabs.length) % tabs.length, true);
+      });
+    });
+  }
+</script>
 
 <style>
   .hero {
@@ -390,137 +410,104 @@ ollama serve`;
     color: var(--accent);
   }
 
-  /* Topic shelves: the biggest category leads, the next three stack beside it */
-  .shelves {
-    display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    border: 1px solid var(--line);
-    border-radius: var(--r-xl);
-    background: var(--surface);
-    overflow: hidden;
-  }
-
-  .side {
-    display: grid;
-    border-left: 1px solid var(--line);
-  }
-
-  .side .shelf + .shelf {
+  /* Topics: one row of tabs, one list. The list keeps the same height whichever tab is open. */
+  .topics {
     border-top: 1px solid var(--line);
   }
 
-  .shelf {
-    padding: 24px;
+  .tabs {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
   }
 
-  .shelf-main {
-    gap: 16px;
-    padding: 28px 32px;
-  }
-
-  .shelf-head {
-    display: flex;
+  .tabs button {
+    display: inline-flex;
     align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: var(--r-md);
+    background: transparent;
+    color: var(--text-2);
+    font: 400 15px/36px var(--font);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
   }
 
-  .shelf-head h3 {
-    font-size: 16px;
-    transition: color 0.15s var(--ease);
+  .tabs button:hover {
+    color: var(--text);
+    background: var(--bg-sunk);
   }
 
-  .shelf-main .shelf-head h3 {
-    font-size: 1.375rem;
+  .tabs button[aria-selected='true'] {
+    color: var(--bg);
+    background: var(--text);
   }
 
-  .shelf-head:hover h3 {
-    color: var(--accent);
+  .tabs .n {
+    font-size: 12px;
+    opacity: 0.6;
   }
 
-  .shelf-head span {
-    font-size: 13px;
-    color: var(--text-3);
-  }
-
-  .shelf ul {
+  .panel ul {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 48px;
   }
 
-  .shelf li a {
-    display: block;
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--text-2);
+  .panel li {
+    border-bottom: 1px solid var(--line);
   }
 
-  .shelf .t {
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    transition: color 0.15s var(--ease);
-  }
-
-  .shelf li a:hover .t {
-    color: var(--text);
-  }
-
-  .shelf-main ul {
-    gap: 0;
-  }
-
-  .shelf-main li + li {
-    border-top: 1px solid var(--line);
-  }
-
-  .shelf-main li a {
+  .panel li a {
     display: grid;
     grid-template-columns: 3rem minmax(0, 1fr);
     gap: 12px;
     align-items: baseline;
-    padding: 12px 0;
+    padding: 16px 0;
     font-size: 15px;
-    color: var(--text);
   }
 
-  .shelf-main .d {
+  .panel .d {
     font-size: 13px;
     color: var(--text-3);
   }
 
-  .shelf-main li a:hover .t {
+  .panel .t {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.15s var(--ease);
+  }
+
+  .panel li a:hover .t {
     color: var(--accent);
   }
 
-  .shelf-main li:first-child a {
-    padding-top: 0;
-  }
-
-  .shelf-more {
-    margin-top: auto;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
+  .panel-more {
+    margin-top: 20px;
     font-size: 14px;
     color: var(--text-2);
     transition: color 0.15s var(--ease);
   }
 
-  .shelf-more:hover {
+  .panel-more:hover {
     color: var(--text);
   }
 
   .tool-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+    gap: 24px;
   }
 
   @media (max-width: 960px) {
@@ -537,15 +524,8 @@ ollama serve`;
       grid-template-columns: minmax(0, 1fr);
       gap: 32px;
     }
-    .shelves {
+    .panel ul {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .side {
-      border-left: 0;
-      border-top: 1px solid var(--line);
-    }
-    .shelf-main {
-      padding: 24px;
     }
   }
 

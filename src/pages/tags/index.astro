@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { countBy, getPosts, postUrl, tagLabel } from '../../lib/content';
+import { categoryLabel, countBy, getPosts, postUrl, tagLabel } from '../../lib/content';
 
 const posts = (await getPosts()).filter((p) => !p.data.draft);
 const categories = countBy(posts.map((p) => p.data.category));
@@ -25,7 +25,7 @@ const tags = countBy(posts.flatMap((p) => p.data.tags));
             return (
               <li>
                 <a class="cat" href={`/categories/${name}/`}>
-                  <span class="name">{name}</span>
+                  <span class="name">{categoryLabel(name)}</span>
                   <span class="bar" style={`--w:${(n / max) * 100}%`} aria-hidden="true"></span>
                   <span class="n num">{n} 篇</span>
                 </a>

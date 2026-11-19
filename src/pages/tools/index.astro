@@ -1,55 +1,135 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolCard from '../../components/ToolCard.astro';
+import Icon from '../../components/Icon.astro';
 import { getTools } from '../../lib/content';
+import { WEB_TOOLS } from '../../lib/webtools';
 
-const tools = await getTools();
+const apps = await getTools();
 ---
 
-<BaseLayout title="小工具" description="自己写、自己每天在用的桌面小工具">
+<BaseLayout title="小工具" description="浏览器里直接用的开发小工具，以及自己写的桌面应用">
   <div class="container">
     <header class="page-head">
       <h1 class="rise">小工具</h1>
-      <p class="rise rise-2">写博客和维护服务器时顺手做的桌面工具，先解决自己的麻烦，也分享给你</p>
+      <p class="rise rise-2">开发常用的在线工具，以及自己写的桌面应用</p>
     </header>
 
-    {tools.length > 0 ? (
-      <div class="tool-grid">
-        {tools.map((tool) => <ToolCard tool={tool} />)}
+    <section class="group">
+      <div class="group-head">
+        <h2>在线工具</h2>
+        <span class="hint">在浏览器本地处理，不上传任何内容</span>
       </div>
-    ) : (
-      <div class="empty">
-        <p>第一个工具正在整理中</p>
-        <p class="sub">发布后会出现在这里，也会推送到 <a href="/subscribe/">RSS</a></p>
-      </div>
+      <ul class="web-tools">
+        {WEB_TOOLS.map((t) => (
+          <li>
+            <a href={`/tools/${t.slug}/`}>
+              <span class="n">{t.name}</span>
+              <span class="d">{t.tagline}</span>
+              <span class="go"><Icon name="arrowRight" size={16} /></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    {apps.length > 0 && (
+      <section class="group">
+        <div class="group-head">
+          <h2>桌面应用</h2>
+          <span class="hint">写博客和维护服务器时自己做的</span>
+        </div>
+        <div class="tool-grid">
+          {apps.map((tool) => <ToolCard tool={tool} />)}
+        </div>
+      </section>
     )}
   </div>
 </BaseLayout>
 
 <style>
-  .tool-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
-    gap: 24px;
+  .group + .group {
+    margin-top: 64px;
   }
 
-  .empty {
-    padding: 64px 32px;
-    border-radius: var(--r-xl);
-    border: 1px dashed var(--line-strong);
-    text-align: center;
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-bottom: 20px;
+  }
+
+  .group-head h2 {
+    font-size: 1.375rem;
+  }
+
+  .hint {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  /* Five tools: a 3+2 grid on wide screens reads as a list, not as a broken row. */
+  .web-tools {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    gap: 12px;
+  }
+
+  @media (min-width: 900px) {
+    .web-tools {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .web-tools a {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+    padding: 18px 48px 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+
+  .web-tools a:hover {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .web-tools .n {
     font-size: 16px;
     font-weight: 500;
   }
 
-  .empty .sub {
-    margin-top: 8px;
+  .web-tools .d {
     font-size: 14px;
-    font-weight: 400;
-    color: var(--text-3);
+    line-height: 1.6;
+    color: var(--text-2);
   }
 
-  .empty a {
-    color: var(--accent);
+  .web-tools .go {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--text-3);
+    transition: transform 0.15s var(--ease), color 0.15s var(--ease);
+  }
+
+  .web-tools a:hover .go {
+    color: var(--text);
+    transform: translateX(2px);
+  }
+
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+    gap: 24px;
   }
 </style>

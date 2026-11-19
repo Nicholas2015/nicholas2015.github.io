@@ -1,0 +1,313 @@
+---
+import WebToolLayout from '../../layouts/WebToolLayout.astro';
+---
+
+<WebToolLayout slug="base64">
+  <div class="wt-toolbar">
+    <div class="wt-seg" role="group" aria-label="内容类型">
+      <button type="button" data-kind="text" aria-pressed="true">文本</button>
+      <button type="button" data-kind="image" aria-pressed="false">图片 / 文件</button>
+    </div>
+    <span class="spacer"></span>
+    <label class="opt"><input type="checkbox" data-urlsafe /> URL 安全（- _，去掉 =）</label>
+  </div>
+
+  <section data-panel="text">
+    <div class="wt-grid">
+      <div class="wt-pane">
+        <div class="wt-label">原文 <button type="button" class="wt-mini" data-clear="plain">清空</button></div>
+        <textarea class="wt-text short" data-plain spellcheck="false" placeholder="输入文本，右侧实时得到 Base64"></textarea>
+      </div>
+      <div class="wt-pane">
+        <div class="wt-label">Base64 <button type="button" class="wt-mini" data-copy="b64">复制</button></div>
+        <textarea class="wt-text short" data-b64 spellcheck="false" placeholder="或者粘贴 Base64，左侧实时得到原文"></textarea>
+      </div>
+    </div>
+    <p class="wt-status" data-status-text aria-live="polite"></p>
+  </section>
+
+  <section data-panel="image" hidden>
+    <div class="wt-grid">
+      <div class="wt-pane">
+        <div class="wt-label">图片转 Base64</div>
+        <label class="drop" data-drop>
+          <input type="file" data-file hidden />
+          <span class="drop-main">拖入文件，或点击选择</span>
+          <span class="drop-sub">也可以直接 Ctrl+V 粘贴截图</span>
+          <span class="drop-preview" data-preview></span>
+        </label>
+        <div class="wt-label out-label">
+          <span>结果</span>
+          <span class="out-acts">
+            <div class="wt-seg small" role="group" aria-label="输出格式">
+              <button type="button" data-fmt="uri" aria-pressed="true">Data URI</button>
+              <button type="button" data-fmt="raw" aria-pressed="false">纯 Base64</button>
+            </div>
+            <button type="button" class="wt-mini" data-copy="file">复制</button>
+          </span>
+        </div>
+        <textarea class="wt-text short" data-file-out readonly spellcheck="false"></textarea>
+      </div>
+      <div class="wt-pane">
+        <div class="wt-label">Base64 转图片 <button type="button" class="wt-mini" data-download hidden>下载</button></div>
+        <textarea class="wt-text short" data-img-in spellcheck="false" placeholder="粘贴 data:image/png;base64,… 或纯 Base64"></textarea>
+        <div class="preview-box" data-img-box hidden></div>
+      </div>
+    </div>
+    <p class="wt-status" data-status-img aria-live="polite"></p>
+  </section>
+</WebToolLayout>
+
+<style>
+  .opt {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+  }
+
+  .opt input {
+    accent-color: var(--text);
+  }
+
+  :global(.wt-text.short) {
+    min-height: 260px;
+  }
+
+  .drop {
+    position: relative;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 4px;
+    min-height: 180px;
+    padding: 16px;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--r-lg);
+    background: var(--code-bg);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+  }
+
+  .drop:hover,
+  .drop[data-over] {
+    border-color: var(--text-3);
+  }
+
+  .drop-main {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .drop-sub {
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .drop-preview :global(img) {
+    display: block;
+    max-width: 100%;
+    max-height: 140px;
+    margin: 8px auto 0;
+    border-radius: 6px;
+  }
+
+  .out-label {
+    margin-top: 16px;
+  }
+
+  .out-acts {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .wt-seg.small button {
+    height: 24px;
+    font-size: 12px;
+    padding: 0 8px;
+  }
+
+  .preview-box {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+    background: repeating-conic-gradient(var(--bg-sunk) 0 25%, var(--surface) 0 50%) 0 0 / 16px 16px;
+    text-align: center;
+  }
+
+  .preview-box :global(img) {
+    max-width: 100%;
+    max-height: 320px;
+  }
+</style>
+
+<script>
+  const $ = <T extends Element>(s: string) => document.querySelector<T>(s)!;
+  const urlsafe = $<HTMLInputElement>('[data-urlsafe]');
+
+  // UTF-8 safe Base64, in both standard and URL-safe alphabets.
+  const bytesToB64 = (bytes: Uint8Array) => {
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    const s = btoa(bin);
+    return urlsafe.checked ? s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : s;
+  };
+  const b64ToBytes = (s: string) => {
+    let t = s.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
+    if (/[^A-Za-z0-9+/=]/.test(t)) throw new Error('含有 Base64 之外的字符');
+    t = t.replace(/=+$/, '');
+    if (t.length % 4 === 1) throw new Error('长度不对，可能被截断了');
+    t += '='.repeat((4 - (t.length % 4)) % 4);
+    return Uint8Array.from(atob(t), (c) => c.charCodeAt(0));
+  };
+
+  const status = (el: HTMLElement, text: string, kind: '' | 'ok' | 'err' = '') => {
+    el.textContent = text;
+    el.className = `wt-status ${kind}`;
+  };
+
+  // ---- Panels
+  document.querySelectorAll<HTMLButtonElement>('[data-kind]').forEach((b) =>
+    b.addEventListener('click', () => {
+      document.querySelectorAll<HTMLButtonElement>('[data-kind]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      document.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== b.dataset.kind));
+    }),
+  );
+
+  // ---- Text: both boxes are editable; whichever you type in drives the other.
+  const plain = $<HTMLTextAreaElement>('[data-plain]');
+  const b64 = $<HTMLTextAreaElement>('[data-b64]');
+  const sText = $<HTMLElement>('[data-status-text]');
+  const encodeText = () => {
+    if (!plain.value) { b64.value = ''; status(sText, ''); return; }
+    const bytes = new TextEncoder().encode(plain.value);
+    b64.value = bytesToB64(bytes);
+    status(sText, `已编码 · 原文 ${bytes.length} 字节 → ${b64.value.length} 个字符`, 'ok');
+  };
+  const decodeText = () => {
+    if (!b64.value.trim()) { plain.value = ''; status(sText, ''); return; }
+    try {
+      const bytes = b64ToBytes(b64.value);
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      plain.value = text;
+      status(sText, `已解码 · ${bytes.length} 字节，UTF-8 文本`, 'ok');
+    } catch (e) {
+      const msg = (e as Error).message;
+      plain.value = '';
+      status(sText, msg.includes('decode') || e instanceof TypeError ? '解码成功，但内容不是 UTF-8 文本，可能是图片或其他文件，请切换到「图片 / 文件」' : `无法解码：${msg}`, 'err');
+    }
+  };
+  plain.addEventListener('input', encodeText);
+  b64.addEventListener('input', decodeText);
+  urlsafe.addEventListener('change', () => { if (plain.value) encodeText(); if (fileBytes) renderFile(); });
+
+  // ---- File → Base64
+  const drop = $<HTMLLabelElement>('[data-drop]');
+  const fileInput = $<HTMLInputElement>('[data-file]');
+  const preview = $<HTMLElement>('[data-preview]');
+  const fileOut = $<HTMLTextAreaElement>('[data-file-out]');
+  const sImg = $<HTMLElement>('[data-status-img]');
+  let fileBytes: Uint8Array | null = null;
+  let fileType = '';
+  let fmt: 'uri' | 'raw' = 'uri';
+
+  const renderFile = () => {
+    if (!fileBytes) return;
+    const raw = bytesToB64(fileBytes);
+    fileOut.value = fmt === 'uri' ? `data:${fileType || 'application/octet-stream'};base64,${raw.replace(/-/g, '+').replace(/_/g, '/')}` : raw;
+  };
+  const loadFile = async (f: File) => {
+    fileBytes = new Uint8Array(await f.arrayBuffer());
+    fileType = f.type;
+    preview.replaceChildren();
+    if (f.type.startsWith('image/')) {
+      const img = new Image();
+      img.alt = '已选择的图片';
+      img.src = URL.createObjectURL(f);
+      preview.append(img);
+    }
+    renderFile();
+    status(sImg, `${f.name || '粘贴的图片'} · ${f.type || '未知类型'} · ${(f.size / 1024).toFixed(1)} KB → ${(fileOut.value.length / 1024).toFixed(1)} KB 文本`, 'ok');
+  };
+  fileInput.addEventListener('change', () => fileInput.files?.[0] && loadFile(fileInput.files[0]));
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.dataset.over = ''; });
+  drop.addEventListener('dragleave', () => delete drop.dataset.over);
+  drop.addEventListener('drop', (e) => { e.preventDefault(); delete drop.dataset.over; const f = e.dataTransfer?.files[0]; if (f) loadFile(f); });
+  document.addEventListener('paste', (e) => {
+    if ($<HTMLElement>('[data-panel="image"]').hidden) return;
+    const f = [...(e.clipboardData?.files ?? [])][0];
+    if (f) { e.preventDefault(); loadFile(f); }
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-fmt]').forEach((b) =>
+    b.addEventListener('click', () => {
+      fmt = b.dataset.fmt as typeof fmt;
+      document.querySelectorAll<HTMLButtonElement>('[data-fmt]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      renderFile();
+    }),
+  );
+
+  // ---- Base64 → image
+  const imgIn = $<HTMLTextAreaElement>('[data-img-in]');
+  const imgBox = $<HTMLElement>('[data-img-box]');
+  const dl = $<HTMLButtonElement>('[data-download]');
+  let blobUrl = '';
+
+  // Recognise the common formats from their first bytes when there is no data: prefix.
+  const sniff = (b: Uint8Array) =>
+    b[0] === 0x89 && b[1] === 0x50 ? ['image/png', 'png'] :
+    b[0] === 0xff && b[1] === 0xd8 ? ['image/jpeg', 'jpg'] :
+    b[0] === 0x47 && b[1] === 0x49 ? ['image/gif', 'gif'] :
+    b[0] === 0x52 && b[8] === 0x57 ? ['image/webp', 'webp'] :
+    b[0] === 0x3c ? ['image/svg+xml', 'svg'] :
+    b[0] === 0x42 && b[1] === 0x4d ? ['image/bmp', 'bmp'] :
+    b[0] === 0x25 && b[1] === 0x50 ? ['application/pdf', 'pdf'] :
+    ['application/octet-stream', 'bin'];
+
+  const decodeImage = () => {
+    const src = imgIn.value.trim();
+    imgBox.hidden = true;
+    dl.hidden = true;
+    if (!src) { status(sImg, ''); return; }
+    try {
+      const m = /^data:([^;,]+)?(?:;[^,]*)?,(.*)$/s.exec(src);
+      const bytes = b64ToBytes(m ? m[2] : src);
+      const [type, ext] = m?.[1] ? [m[1], m[1].split('/')[1]?.replace('jpeg', 'jpg').replace('svg+xml', 'svg') ?? 'bin'] : sniff(bytes);
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      blobUrl = URL.createObjectURL(new Blob([bytes], { type }));
+      dl.hidden = false;
+      dl.onclick = () => Object.assign(document.createElement('a'), { href: blobUrl, download: `decoded.${ext}` }).click();
+      if (type.startsWith('image/')) {
+        const imgOut = new Image();
+        imgOut.alt = '解码出的图片';
+        imgOut.onload = () => status(sImg, `${type} · ${imgOut.naturalWidth}×${imgOut.naturalHeight} · ${(bytes.length / 1024).toFixed(1)} KB`, 'ok');
+        imgOut.onerror = () => { imgBox.hidden = true; status(sImg, '数据能解码，但不是有效的图片', 'err'); };
+        imgOut.src = blobUrl;
+        imgBox.replaceChildren(imgOut);
+        imgBox.hidden = false;
+      } else {
+        status(sImg, `解码为 ${type} · ${(bytes.length / 1024).toFixed(1)} KB，可以下载`, 'ok');
+      }
+    } catch (e) {
+      status(sImg, `无法解码：${(e as Error).message}`, 'err');
+    }
+  };
+  let t: ReturnType<typeof setTimeout>;
+  imgIn.addEventListener('input', () => { clearTimeout(t); t = setTimeout(decodeImage, 200); });
+
+  // ---- Copy & clear
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const v = b.dataset.copy === 'b64' ? b64.value : fileOut.value;
+      if (!v) return;
+      await navigator.clipboard.writeText(v).catch(() => {});
+      b.textContent = '已复制';
+      setTimeout(() => (b.textContent = '复制'), 1400);
+    }),
+  );
+  $<HTMLButtonElement>('[data-clear="plain"]').addEventListener('click', () => { plain.value = ''; b64.value = ''; status(sText, ''); });
+</script>

@@ -1,0 +1,246 @@
+---
+import WebToolLayout from '../../layouts/WebToolLayout.astro';
+---
+
+<WebToolLayout slug="yaml-properties">
+  <div class="wt-toolbar">
+    <div class="wt-seg" role="group" aria-label="转换方向">
+      <button type="button" data-dir="y2p" aria-pressed="true">YAML → Properties</button>
+      <button type="button" data-dir="p2y" aria-pressed="false">Properties → YAML</button>
+    </div>
+    <span class="spacer"></span>
+    <button type="button" class="wt-btn" data-swap>结果作为输入</button>
+  </div>
+
+  <div class="wt-grid">
+    <div class="wt-pane">
+      <div class="wt-label"><span data-in-label>application.yml</span> <button type="button" class="wt-mini" data-sample>示例</button></div>
+      <textarea class="wt-text" data-in spellcheck="false"></textarea>
+    </div>
+    <div class="wt-pane">
+      <div class="wt-label"><span data-out-label>application.properties</span> <button type="button" class="wt-mini" data-copy>复制</button></div>
+      <textarea class="wt-text" data-out readonly spellcheck="false"></textarea>
+    </div>
+  </div>
+  <p class="wt-status" data-status aria-live="polite"></p>
+
+  <details class="rules">
+    <summary>转换规则</summary>
+    <ul>
+      <li>嵌套的键用点号连接：<code>spring.datasource.url</code></li>
+      <li>列表用下标：<code>spring.profiles.active[0]</code>，转回 YAML 时还原成列表</li>
+      <li>多文档 YAML（<code>---</code> 分隔）会合并输出，并用 <code>#---</code> 分隔，与 Spring Boot 2.4+ 的写法一致</li>
+      <li>Properties 里的 <code>\</code> 续行、<code>:</code> 分隔符、<code>!</code> 注释都能识别</li>
+    </ul>
+  </details>
+</WebToolLayout>
+
+<style>
+  .rules {
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+
+  .rules summary {
+    cursor: pointer;
+    color: var(--text-3);
+  }
+
+  .rules ul {
+    margin: 12px 0 0;
+    padding-left: 1.2em;
+    line-height: 1.9;
+  }
+
+  .rules code {
+    font: 0.92em var(--mono);
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--bg-sunk);
+  }
+</style>
+
+<script>
+  import { parseAllDocuments, stringify } from 'yaml';
+
+  const $ = <T extends Element>(s: string) => document.querySelector<T>(s)!;
+  const input = $<HTMLTextAreaElement>('[data-in]');
+  const output = $<HTMLTextAreaElement>('[data-out]');
+  const status = $<HTMLElement>('[data-status]');
+  let dir: 'y2p' | 'p2y' = 'y2p';
+
+  const SAMPLE_YAML = `server:
+  port: 8080
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/orders?useSSL=false
+    username: root
+  profiles:
+    active:
+      - dev
+      - local
+logging:
+  level:
+    root: info
+    com.example.order: debug
+`;
+
+  const setStatus = (text: string, kind: '' | 'ok' | 'err' = '') => {
+    status.textContent = text;
+    status.className = `wt-status ${kind}`;
+  };
+
+  // ---- YAML → Properties
+  const escValue = (v: string) =>
+    v.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\t/g, '\\t').replace(/^\s/, (m) => `\\${m}`);
+  const escKey = (k: string) => k.replace(/([ :=#!\\])/g, '\\$1');
+
+  const flatten = (v: unknown, prefix: string, out: string[]) => {
+    if (Array.isArray(v)) {
+      if (!v.length) out.push(`${prefix}=`);
+      v.forEach((x, i) => flatten(x, `${prefix}[${i}]`, out));
+    } else if (v && typeof v === 'object' && !(v instanceof Date)) {
+      const entries = Object.entries(v as Record<string, unknown>);
+      if (!entries.length && prefix) out.push(`${prefix}=`);
+      for (const [k, x] of entries) flatten(x, prefix ? `${prefix}.${escKey(k)}` : escKey(k), out);
+    } else {
+      const s = v === null || v === undefined ? '' : v instanceof Date ? v.toISOString() : String(v);
+      out.push(`${prefix}=${escValue(s)}`);
+    }
+  };
+
+  const yamlToProps = (src: string) => {
+    const docs = parseAllDocuments(src);
+    const blocks: string[] = [];
+    let keys = 0;
+    for (const d of docs) {
+      if ('errors' in d && d.errors.length) {
+        const e = d.errors[0];
+        const line = e.linePos?.[0]?.line;
+        throw new Error(line ? `第 ${line} 行：${e.message.split('\n')[0]}` : e.message.split('\n')[0]);
+      }
+      const data = d.toJS();
+      if (data === null || data === undefined) continue;
+      const lines: string[] = [];
+      flatten(data, '', lines);
+      keys += lines.length;
+      blocks.push(lines.join('\n'));
+    }
+    return { text: blocks.join('\n#---\n'), keys, docs: blocks.length };
+  };
+
+  // ---- Properties → YAML
+  const unescape = (s: string) =>
+    s.replace(/\\(u[0-9a-fA-F]{4}|.)/g, (_, c: string) =>
+      c.length === 5 ? String.fromCharCode(parseInt(c.slice(1), 16)) : ({ n: '\n', t: '\t', r: '\r', f: '\f' } as Record<string, string>)[c] ?? c,
+    );
+
+  const parseProps = (src: string) => {
+    const entries: [string, string][] = [];
+    const lines = src.replace(/\r\n?/g, '\n').split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].replace(/^\s+/, '');
+      if (!line || line[0] === '#' || line[0] === '!') continue;
+      // Join continuation lines: an odd number of trailing backslashes.
+      while (/(^|[^\\])(\\\\)*\\$/.test(line) && i + 1 < lines.length) line = line.slice(0, -1) + lines[++i].replace(/^\s+/, '');
+      let k = '', j = 0;
+      for (; j < line.length; j++) {
+        const c = line[j];
+        if (c === '\\') { k += line.slice(j, j + 2); j++; continue; }
+        if (c === '=' || c === ':' || /\s/.test(c)) break;
+        k += c;
+      }
+      let rest = line.slice(j).replace(/^\s*[=:]?\s*/, '');
+      entries.push([unescape(k), unescape(rest)]);
+    }
+    return entries;
+  };
+
+  // Keep numbers, booleans and null typed; everything else stays a string.
+  const typed = (v: string): unknown => {
+    if (/^(true|false)$/i.test(v)) return v.toLowerCase() === 'true';
+    if (/^-?(0|[1-9]\d*)(\.\d+)?$/.test(v) && v.length < 16) return Number(v);
+    if (v === '') return '';
+    return v;
+  };
+
+  const setPath = (root: Record<string, unknown>, key: string, value: unknown) => {
+    const parts: (string | number)[] = [];
+    for (const seg of key.split('.')) {
+      const m = /^([^[\]]*)((?:\[\d+\])*)$/.exec(seg);
+      if (!m) { parts.push(seg); continue; }
+      if (m[1]) parts.push(m[1]);
+      for (const idx of m[2].matchAll(/\[(\d+)\]/g)) parts.push(Number(idx[1]));
+    }
+    let cur: any = root;
+    parts.forEach((p, i) => {
+      const last = i === parts.length - 1;
+      if (last) { cur[p] = value; return; }
+      const nextIsIndex = typeof parts[i + 1] === 'number';
+      if (cur[p] === undefined || typeof cur[p] !== 'object' || cur[p] === null) cur[p] = nextIsIndex ? [] : {};
+      cur = cur[p];
+    });
+  };
+
+  const propsToYaml = (src: string) => {
+    const docs = src.split(/^#---\s*$/m);
+    const out: string[] = [];
+    let keys = 0;
+    for (const part of docs) {
+      const entries = parseProps(part);
+      if (!entries.length) continue;
+      const root: Record<string, unknown> = {};
+      for (const [k, v] of entries) setPath(root, k, typed(v));
+      keys += entries.length;
+      out.push(stringify(root, { indent: 2, lineWidth: 0 }).trimEnd());
+    }
+    return { text: out.join('\n---\n') + (out.length ? '\n' : ''), keys, docs: out.length };
+  };
+
+  const run = () => {
+    const src = input.value;
+    if (!src.trim()) { output.value = ''; setStatus(''); return; }
+    try {
+      const r = dir === 'y2p' ? yamlToProps(src) : propsToYaml(src);
+      output.value = r.text;
+      setStatus(`转换完成 · ${r.keys} 个键${r.docs > 1 ? ` · ${r.docs} 个文档` : ''}`, 'ok');
+    } catch (e) {
+      output.value = '';
+      setStatus(`解析失败：${(e as Error).message}`, 'err');
+    }
+  };
+
+  const setDir = (d: typeof dir) => {
+    dir = d;
+    document.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dir === d)));
+    $('[data-in-label]').textContent = d === 'y2p' ? 'application.yml' : 'application.properties';
+    $('[data-out-label]').textContent = d === 'y2p' ? 'application.properties' : 'application.yml';
+    run();
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.addEventListener('click', () => setDir(b.dataset.dir as typeof dir)));
+  $('[data-swap]').addEventListener('click', () => {
+    if (!output.value) return;
+    input.value = output.value;
+    setDir(dir === 'y2p' ? 'p2y' : 'y2p');
+  });
+  $('[data-sample]').addEventListener('click', () => {
+    if (dir === 'y2p') input.value = SAMPLE_YAML;
+    else input.value = yamlToProps(SAMPLE_YAML).text;
+    run();
+  });
+
+  let t: ReturnType<typeof setTimeout>;
+  input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(run, 250); });
+
+  $<HTMLButtonElement>('[data-copy]').addEventListener('click', async (e) => {
+    const b = e.currentTarget as HTMLButtonElement;
+    if (!output.value) return;
+    await navigator.clipboard.writeText(output.value).catch(() => {});
+    b.textContent = '已复制';
+    setTimeout(() => (b.textContent = '复制'), 1400);
+  });
+</script>

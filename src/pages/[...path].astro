@@ -58,7 +58,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
         )}
         <span class="dot" aria-hidden="true"></span>
         <span>约 {minutes} 分钟</span>
-        <ViewCount dot />
+        <ViewCount field="page_pv" dot />
       </div>
       <div class="chips rise rise-2">
         <a class="tag" href={`/categories/${category}/`}>{categoryLabel(category)}</a>

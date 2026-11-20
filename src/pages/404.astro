@@ -1,26 +1,143 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
+import { formatDate, getPosts, postUrl } from '../lib/content';
+
+const recent = (await getPosts())
+  .filter((p) => !p.data.draft)
+  .slice(0, 5);
 ---
 
 <BaseLayout title="页面不存在">
   <div class="container">
     <header class="page-head">
       <h1 class="num">404</h1>
-      <p>这一页飘走了，链接可能已经失效</p>
+      <p>这一页飘走了，链接可能已经失效。搜一下试试</p>
+    </header>
+
+    <div class="body">
+      <form class="lookup" action="/search/" method="get" role="search">
+        <Icon name="search" size={18} />
+        <input type="search" name="q" placeholder="搜索标题或正文" aria-label="搜索文章" />
+      </form>
+
+      <section class="recent" aria-label="最近的文章">
+        <h2>最近的文章</h2>
+        <ul>
+          {recent.map((p) => (
+            <li>
+              <a href={postUrl(p)}>
+                <span class="t">{p.data.title}</span>
+                <span class="d num">{formatDate(p.data.date)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <div class="cta">
         <a class="btn btn-primary arrow-link" href="/archives/">看看全部文章 <Icon name="arrowRight" size={16} /></a>
         <a class="btn" href="/">回到首页</a>
       </div>
-    </header>
+    </div>
   </div>
 </BaseLayout>
 
 <style>
+  .body {
+    max-width: 44rem;
+  }
+
+  .lookup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    color: var(--text-3);
+    transition: border-color 0.15s var(--ease);
+  }
+
+  .lookup:focus-within {
+    border-color: var(--text-3);
+  }
+
+  .lookup input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: 400 15px var(--font);
+    outline: none;
+  }
+
+  .lookup input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .recent {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .recent h2 {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
+  }
+
+  .recent ul {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+  }
+
+  .recent li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .recent a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 16px;
+    align-items: baseline;
+    padding: 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .recent a:hover {
+    background: var(--bg-sunk);
+  }
+
+  .recent .t {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .recent .d {
+    font-size: 13px;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
   .cta {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 32px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 560px) {
+    .recent a {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>

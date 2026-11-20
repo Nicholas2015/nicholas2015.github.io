@@ -7,9 +7,11 @@ import { SITE } from '../consts';
 interface Props {
   title?: string;
   description?: string;
+  /** Structured data for search engines, emitted as JSON-LD in the head. */
+  jsonLd?: Record<string, unknown>;
 }
 
-const { title, description = SITE.description } = Astro.props;
+const { title, description = SITE.description, jsonLd } = Astro.props;
 const fullTitle = title ? `${title} | ${SITE.title}` : `${SITE.title} - ${SITE.subtitle}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -39,6 +41,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="generator" content={Astro.generator} />
+    {jsonLd && <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />}
     <script is:inline>
       try {
         const t = localStorage.getItem('theme');
@@ -52,6 +55,28 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       <slot />
     </main>
     <Footer />
+    {/* "/" or ⌘K jumps to search; when the box is already on screen it just focuses it. */}
+    <script>
+      document.addEventListener('keydown', (e) => {
+        const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+        const isSlash = e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey;
+        if (!isCmdK && !isSlash) return;
+
+        // Never steal the key while the cursor is in a field. The target can be
+        // the document itself, which has no closest().
+        const el = e.target;
+        if (el instanceof Element && el.closest('input, textarea, select, [contenteditable]')) return;
+
+        e.preventDefault();
+        const box = document.querySelector<HTMLInputElement>('[data-q]');
+        if (box) {
+          box.focus();
+          box.select();
+        } else {
+          location.href = '/search/';
+        }
+      });
+    </script>
     {/* Records one page view and fills in any count slots on the page.
         Below `/counter` there is no reading API: the POST returns the numbers.
         Skip localhost unless ?vc=1, so local previews don't skew the data. */}

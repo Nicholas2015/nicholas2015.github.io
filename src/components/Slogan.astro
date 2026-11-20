@@ -1,6 +1,6 @@
 ---
 // Types each line out, holds it, deletes it, then moves to the next. Loops.
-// The caret is the logo's own cursor: an ink bar with a clay dash beside it.
+// The caret is the site's own cursor: an ink bar with a clay dash beside it.
 // Screen readers get all lines at once; reduced motion shows the first line still.
 interface Props {
   lines: string[];
@@ -10,14 +10,14 @@ interface Props {
 const { lines, class: className } = Astro.props;
 ---
 
-<p class:list={['typewriter', className]} data-lines={JSON.stringify(lines)}>
+<p class:list={['slogan-lines', className]} data-lines={JSON.stringify(lines)}>
   <span class="sr">{lines.join('。')}</span>
   <span class="line" aria-hidden="true"><span class="text">{lines[0]}</span><span class="caret"><i></i><b></b></span></span>
 </p>
 
 <style>
   /* One fixed line: long lines truncate instead of wrapping, so nothing below ever moves. */
-  .typewriter {
+  .slogan-lines {
     height: 1.6em;
     overflow: hidden;
   }
@@ -93,7 +93,7 @@ const { lines, class: className } = Astro.props;
   const HOLD = 2400;
   const GAP = 400;
 
-  for (const el of document.querySelectorAll<HTMLElement>('.typewriter[data-lines]')) {
+  for (const el of document.querySelectorAll<HTMLElement>('.slogan-lines[data-lines]')) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) continue;
     const text = el.querySelector<HTMLElement>('.text');
     if (!text) continue;

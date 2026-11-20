@@ -5,7 +5,7 @@ import ThemedShot from '../components/ThemedShot.astro';
 import { WEB_TOOLS } from '../lib/webtools';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
-import Typewriter from '../components/Typewriter.astro';
+import Slogan from '../components/Slogan.astro';
 import ViewCount from '../components/ViewCount.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
@@ -49,10 +49,8 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
           <Logo size={56} class="mark" />
           <span>{SITE.title}</span>
         </h1>
-        <Typewriter lines={SITE.slogans} class="slogan rise rise-2" />
-        <p class="lead rise rise-2">
-          {SITE.author}的技术笔记。Spring AI、RAG、Kafka、Redis、线上排查，一步一步讲清楚，命令可以直接复制
-        </p>
+        <p class="subtitle rise rise-2">{SITE.author}的技术笔记</p>
+        <Slogan lines={SITE.slogans} class="slogan rise rise-2" />
         <div class="cta rise rise-3">
           <a class="btn btn-primary arrow-link" href="/archives/">阅读文章 <Icon name="arrowRight" size={16} /></a>
           <a class="btn" href="/subscribe/"><Icon name="rss" size={16} /> 订阅</a>
@@ -297,19 +295,20 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     height: 0.8em;
   }
 
-  .hero :global(.slogan) {
-    margin-top: 20px;
-    max-width: 32rem;
-    font-size: clamp(1rem, 1.6vw, 1.125rem);
-    color: var(--text-3);
-  }
-
-  .lead {
-    margin-top: 12px;
+  /* One line under the name, then the slogan types below it. */
+  .subtitle {
+    margin-top: 18px;
     max-width: 32rem;
     font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
     line-height: 1.6;
     color: var(--text-2);
+  }
+
+  .hero :global(.slogan) {
+    margin-top: 10px;
+    max-width: 32rem;
+    font-size: clamp(0.9375rem, 1.5vw, 1rem);
+    color: var(--text-3);
   }
 
   .cta {
@@ -730,6 +729,20 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     }
     .panel ul {
       grid-template-columns: minmax(0, 1fr);
+    }
+    /* A desktop window at phone width is unreadable, so show a strip of it — the
+       shape of the app, not a page of 2px text. */
+    .stage {
+      aspect-ratio: auto;
+      height: 176px;
+      margin-bottom: 20px;
+    }
+    .frame {
+      mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+    }
+    .frame[data-behind] {
+      transform: translate(-10px, 34px) translateZ(-60px) rotateX(8deg);
     }
   }
 </style>

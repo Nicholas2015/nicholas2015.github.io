@@ -41,6 +41,9 @@ interface Props {
 const { post, newer, older, related = [] } = Astro.props;
 const { Content, headings } = await render(post);
 const { title, date, updated, category, tags } = post.data;
+// A tag that repeats the category prints the same word twice. The category chip
+// already links to the fuller page, so drop the duplicate tag from the row.
+const tagChips = tags.filter((tag) => tagLabel(tag).toLowerCase() !== categoryLabel(category).toLowerCase());
 // Hand-written posts may open with `# Title`, repeating the page title. Hide it and keep it out of the TOC.
 const norm = (s: string) => s.replace(/[\s_，,！!？?。.“”"（）()：:]/g, '').toLowerCase();
 const lead = headings[0];
@@ -78,7 +81,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
       </div>
       <div class="chips rise rise-2">
         <a class="tag" href={`/categories/${category}/`}>{categoryLabel(category)}</a>
-        {tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tagLabel(tag)}</a>)}
+        {tagChips.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tagLabel(tag)}</a>)}
       </div>
     </header>
 

@@ -6,6 +6,7 @@ import { WEB_TOOLS } from '../lib/webtools';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
 import Typewriter from '../components/Typewriter.astro';
+import ViewCount from '../components/ViewCount.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
 import { categoryLabel, countBy, excerpt, formatDate, getPosts, getTools, postUrl, type Post } from '../lib/content';
@@ -47,6 +48,7 @@ ollama serve`;
       <div class="intro">
         <p class="stat rise">
           <span class="num">{firstYear}</span> 年起 · <span class="num">{posts.length}</span> 篇 · 最近更新 <span class="num">{formatDate(lead.data.date).slice(5)}</span>
+          <ViewCount total template="累计 {n} 次浏览" />
         </p>
         <h1 class="rise">
           <Logo size={56} class="mark" />

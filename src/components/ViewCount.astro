@@ -1,0 +1,80 @@
+---
+// Shows a page's view count read from GoatCounter.
+//
+// The site is static, so the number is fetched after load rather than baked in.
+// Counts are cached upstream for up to four hours, so a fresh view shows up late.
+// If the request fails — offline, blocked, or the counter setting is off in
+// GoatCounter — the element stays hidden instead of showing zero.
+interface Props {
+  /** Path to count, with a leading slash. Defaults to the current path. */
+  path?: string;
+  /** Read the site-wide total instead of one page. */
+  total?: boolean;
+  /** Text around the number; `{n}` is replaced with the formatted count. */
+  template?: string;
+  /** Draw the small dot used between items in the post meta line. */
+  dot?: boolean;
+}
+
+const { path, total = false, template = '{n} 次阅读', dot = false } = Astro.props;
+---
+
+<span
+  class:list={['views', { 'has-dot': dot }]}
+  data-views
+  data-path={path}
+  data-total={total ? '' : undefined}
+  data-template={template}
+  hidden></span>
+
+<script>
+  import { STATS } from '../consts';
+
+  const fmt = (n: number) =>
+    n >= 10000 ? `${(n / 10000).toFixed(1).replace(/\.0$/, '')} 万` : n.toLocaleString('zh-CN');
+
+  for (const el of document.querySelectorAll<HTMLElement>('[data-views]')) {
+    const path = el.dataset.path || location.pathname;
+    // The counter route takes the full path with its leading slash: /counter//2026/…/.json
+    const url = el.hasAttribute('data-total')
+      ? `${STATS.site}/counter/TOTAL.json`
+      : `${STATS.site}/counter/${path}.json`;
+
+    fetch(url, { mode: 'cors' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const n = Number(data?.count);
+        if (!Number.isFinite(n) || n <= 0) return;
+        el.textContent = (el.dataset.template ?? '{n}').replace('{n}', fmt(n));
+        el.hidden = false;
+      })
+      .catch(() => {
+        // Nothing to show; leave it hidden rather than print a placeholder.
+      });
+  }
+</script>
+
+<style>
+  .views {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .views[hidden] {
+    display: none !important;
+  }
+
+  .views.has-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .views.has-dot::before {
+    content: '';
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+</style>

@@ -10,3 +10,9 @@ export const SITE = {
   // so neither appears as plain text in the source or the built HTML.
   contact: 'eyJlbWFpbCI6InN1bmN5X3NvZnR3YXJlQGhvdG1haWwuY29tIiwicXEiOiI3OTkzMjcyMTAifQ==',
 };
+
+// GoatCounter: cookieless page views. `count` records a view, `counter` reads one back.
+// Reading requires "Allow adding visitor counts on your website" in the site settings.
+export const STATS = {
+  site: 'https://nicholas1991.goatcounter.com',
+};

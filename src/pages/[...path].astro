@@ -58,9 +58,25 @@ const body = post.body ?? '';
 const codeLines = [...body.matchAll(/```[\s\S]*?```/g)].reduce((n, m) => n + m[0].split('\n').length - 2, 0);
 const proseChars = body.replace(/```[\s\S]*?```/g, '').replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\s/g, '').length;
 const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
+
+// Tells search engines what this page is, so results can show the author and date.
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'TechArticle',
+  headline: title,
+  description: post.data.description ?? excerpt(post.body, 150),
+  datePublished: date.toISOString(),
+  dateModified: (updated ?? date).toISOString(),
+  author: { '@type': 'Person', name: SITE.author, url: SITE.github },
+  publisher: { '@type': 'Person', name: SITE.author },
+  mainEntityOfPage: new URL(postUrl(post), Astro.site).href,
+  inLanguage: 'zh-CN',
+  articleSection: categoryLabel(category),
+  ...(tags.length ? { keywords: tags.map(tagLabel).join(', ') } : {}),
+};
 ---
 
-<BaseLayout title={title} description={post.data.description ?? excerpt(post.body, 150)}>
+<BaseLayout title={title} description={post.data.description ?? excerpt(post.body, 150)} jsonLd={jsonLd}>
   <article class:list={['container post', { 'has-toc': toc.length >= 3 }]}>
     <header class="post-head">
       <a class="back arrow-link" href="/archives/"><Icon name="arrowLeft" size={16} /> 全部文章</a>
@@ -86,6 +102,19 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
     </header>
 
     <div class:list={['layout']}>
+      {toc.length >= 3 && (
+        <details class="toc-inline">
+          <summary>目录<span class="count num">{toc.length}</span></summary>
+          <ol>
+            {toc.map((h) => (
+              <li style={`--d:${h.depth - minDepth}`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+
       <div class:list={['prose', { 'drop-title': dupTitle }]} data-pagefind-body>
         <Content />
       </div>
@@ -139,9 +168,22 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
 </BaseLayout>
 
 <script>
+  // Give every section a link you can copy, so a single part can be shared.
+  for (const heading of document.querySelectorAll<HTMLElement>('.prose :is(h2, h3, h4)[id]')) {
+    const a = document.createElement('a');
+    a.className = 'anchor';
+    a.href = `#${heading.id}`;
+    a.setAttribute('aria-label', '链接到这一节');
+    a.textContent = '#';
+    heading.append(a);
+  }
+
   // Highlight the heading currently in view.
   const links = new Map(
-    [...document.querySelectorAll<HTMLAnchorElement>('.toc a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]),
+    [...document.querySelectorAll<HTMLAnchorElement>('.toc a, .toc-inline a')].map((a) => [
+      decodeURIComponent(a.hash.slice(1)),
+      a,
+    ]),
   );
   if (links.size) {
     const io = new IntersectionObserver(
@@ -254,6 +296,112 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
 
   .drop-title > :global(h1:first-child + *) {
     margin-top: 0;
+  }
+
+  /* Jumping to a section should not land under the sticky header. */
+  .prose :global(:is(h2, h3, h4)[id]) {
+    scroll-margin-top: 88px;
+  }
+
+  /* The link icon is added by the script, so it needs :global. */
+  .prose :global(.anchor) {
+    margin-left: 8px;
+    font-weight: 400;
+    color: var(--text-3);
+    opacity: 0;
+    transition: opacity 0.15s var(--ease), color 0.15s var(--ease);
+  }
+
+  .prose :global(:is(h2, h3, h4):hover .anchor),
+  .prose :global(.anchor:focus-visible) {
+    opacity: 1;
+  }
+
+  .prose :global(.anchor:hover) {
+    color: var(--text);
+  }
+
+  /* No hover on touch, so keep the mark faintly visible instead of invisible. */
+  @media (hover: none) {
+    .prose :global(.anchor) {
+      opacity: 0.4;
+    }
+  }
+
+  /* Collapsed table of contents, for widths where the side rail is hidden. */
+  .toc-inline {
+    display: none;
+  }
+
+  @media (max-width: 1120px) {
+    .toc-inline {
+      display: block;
+      grid-column: 1 / -1;
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-lg);
+      background: var(--surface);
+    }
+
+    .toc-inline summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: var(--text-2);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .toc-inline summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .toc-inline summary::after {
+      content: '';
+      margin-left: auto;
+      width: 7px;
+      height: 7px;
+      border-right: 1.5px solid var(--text-3);
+      border-bottom: 1.5px solid var(--text-3);
+      transform: rotate(45deg) translateY(-2px);
+      transition: transform 0.15s var(--ease);
+    }
+
+    .toc-inline[open] summary::after {
+      transform: rotate(-135deg) translateY(-2px);
+    }
+
+    .toc-inline .count {
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .toc-inline ol {
+      list-style: none;
+      margin: 0;
+      padding: 0 18px 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .toc-inline li {
+      padding-left: calc(var(--d) * 12px);
+    }
+
+    .toc-inline a {
+      display: block;
+      padding: 6px 0;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-2);
+    }
+
+    .toc-inline a:hover,
+    .toc-inline a[aria-current] {
+      color: var(--text);
+    }
   }
 
   .toc {

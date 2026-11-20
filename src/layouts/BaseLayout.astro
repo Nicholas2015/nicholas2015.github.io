@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { SITE, STATS } from '../consts';
+import { SITE } from '../consts';
 
 interface Props {
   title?: string;
@@ -52,12 +52,41 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       <slot />
     </main>
     <Footer />
-    {import.meta.env.PROD && (
-      <script
-        is:inline
-        data-goatcounter={`${STATS.site}/count`}
-        async
-        src="https://gc.zgo.at/count.js"></script>
-    )}
+    {/* Records one page view and fills in any count slots on the page.
+        Below `/counter` there is no reading API: the POST returns the numbers.
+        Skip localhost unless ?vc=1, so local previews don't skew the data. */}
+    <script>
+      import { STATS } from '../consts';
+
+      const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if (!local || location.search.includes('vc=1')) {
+        const fmt = (n: number) => n.toLocaleString('zh-CN');
+
+        // A first-party cookie marks a returning visitor; without it every hit counts as new.
+        const key = `vc_uv_${location.host.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+        const isNewUv = !document.cookie.split('; ').some((c) => c.startsWith(`${key}=`));
+        if (isNewUv) document.cookie = `${key}=1; path=/; max-age=31536000; samesite=lax`;
+
+        fetch(STATS.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: location.href, isNewUv }),
+        })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((body) => {
+            const data = body?.data;
+            if (!data) return;
+            for (const el of document.querySelectorAll<HTMLElement>('[data-vc]')) {
+              const n = Number(data[el.dataset.vc as string]);
+              if (!Number.isFinite(n) || n <= 0) continue;
+              el.textContent = (el.dataset.template ?? '{n}').replace('{n}', fmt(n));
+              el.hidden = false;
+            }
+          })
+          .catch(() => {
+            // Counter unreachable: leave the slots hidden rather than show a guess.
+          });
+      }
+    </script>
   </body>
 </html>

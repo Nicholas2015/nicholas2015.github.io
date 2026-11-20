@@ -11,8 +11,9 @@ export const SITE = {
   contact: 'eyJlbWFpbCI6InN1bmN5X3NvZnR3YXJlQGhvdG1haWwuY29tIiwicXEiOiI3OTkzMjcyMTAifQ==',
 };
 
-// GoatCounter: cookieless page views. `count` records a view, `counter` reads one back.
-// Reading requires "Allow adding visitor counts on your website" in the site settings.
+// Vercount: posting a page view returns that page's counts in the same response,
+// so the browser never has to read a separate endpoint (GoatCounter's counter
+// endpoint sends no CORS header, which made it unusable from this static site).
 export const STATS = {
-  site: 'https://nicholas1991.goatcounter.com',
+  endpoint: 'https://events.vercount.one/api/v2/log',
 };

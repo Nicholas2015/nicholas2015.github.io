@@ -10,9 +10,24 @@ import { categoryLabel, excerpt, formatDate, getPosts, postPath, postUrl, tagLab
 
 export async function getStaticPaths() {
   const posts = await getPosts();
+  // Related by shared tags, the same category breaking ties. Computed here so each
+  // page carries only its own three picks, and newer posts win within a score.
+  const relatedFor = (post: Post) => {
+    const mine = new Set(post.data.tags);
+    return posts
+      .filter((p) => p.id !== post.id)
+      .map((p) => ({
+        p,
+        score: p.data.tags.filter((t) => mine.has(t)).length * 2 + (p.data.category === post.data.category ? 1 : 0),
+      }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || b.p.data.date.valueOf() - a.p.data.date.valueOf())
+      .slice(0, 3)
+      .map((x) => x.p);
+  };
   return posts.map((post, i) => ({
     params: { path: postPath(post) },
-    props: { post, newer: posts[i - 1], older: posts[i + 1] },
+    props: { post, newer: posts[i - 1], older: posts[i + 1], related: relatedFor(post) },
   }));
 }
 
@@ -20,9 +35,10 @@ interface Props {
   post: Post;
   newer?: Post;
   older?: Post;
+  related?: Post[];
 }
 
-const { post, newer, older } = Astro.props;
+const { post, newer, older, related = [] } = Astro.props;
 const { Content, headings } = await render(post);
 const { title, date, updated, category, tags } = post.data;
 // Hand-written posts may open with `# Title`, repeating the page title. Hide it and keep it out of the TOC.
@@ -67,7 +83,7 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
     </header>
 
     <div class:list={['layout']}>
-      <div class:list={['prose', { 'drop-title': dupTitle }]}>
+      <div class:list={['prose', { 'drop-title': dupTitle }]} data-pagefind-body>
         <Content />
       </div>
 
@@ -84,6 +100,22 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
         </aside>
       )}
     </div>
+
+    {related.length > 0 && (
+      <section class="related" aria-label="相关文章">
+        <h2>相关文章</h2>
+        <ul>
+          {related.map((p) => (
+            <li>
+              <a href={postUrl(p)}>
+                <span class="rt">{p.data.title}</span>
+                <span class="rm num">{formatDate(p.data.date)} · {categoryLabel(p.data.category)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
 
     <nav class="pager" aria-label="上一篇和下一篇">
       {older ? (
@@ -267,6 +299,63 @@ const minutes = Math.max(1, Math.round(proseChars / 400 + codeLines / 25));
 
   .toc li:has(a[aria-current]) {
     box-shadow: inset 1px 0 0 var(--text);
+  }
+
+  .related {
+    max-width: var(--frame);
+    margin-inline: auto;
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+
+  .related h2 {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--text-3);
+  }
+
+  .related ul {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+  }
+
+  .related li + li {
+    border-top: 1px solid var(--line);
+  }
+
+  .related a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 24px;
+    align-items: baseline;
+    padding: 14px 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .related a:hover {
+    background: var(--bg-sunk);
+  }
+
+  .related .rt {
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .related .rm {
+    font-size: 13px;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    .related a {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 4px;
+    }
   }
 
   .pager {

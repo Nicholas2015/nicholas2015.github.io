@@ -1,0 +1,249 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { getPosts } from '../lib/content';
+
+const total = (await getPosts()).length;
+---
+
+<BaseLayout title="搜索" description="在全部文章里查找">
+  <div class="container">
+    <header class="page-head">
+      <h1 class="rise">搜索</h1>
+      <p class="rise rise-2">在 <span class="num">{total}</span> 篇笔记里查找标题和正文</p>
+    </header>
+
+    <div class="search">
+      <label class="field">
+        <Icon name="search" size={18} />
+        <input
+          type="search"
+          data-q
+          placeholder="试试 Redis 锁、RAG 召回、优雅停机"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="搜索文章"
+        />
+      </label>
+
+      <p class="hint" data-hint aria-live="polite"></p>
+      <ol class="results" data-results></ol>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-q]')!;
+  const results = document.querySelector<HTMLOListElement>('[data-results]')!;
+  const hint = document.querySelector<HTMLElement>('[data-hint]')!;
+
+  // Pagefind writes its index into /pagefind/ during the build, so this import
+  // only resolves on a built site. Imported through a variable so the bundler
+  // leaves it alone instead of trying to resolve a file that isn't there yet.
+  let engine: { init: () => Promise<void>; search: (q: string) => Promise<any> } | null | undefined;
+
+  const load = async () => {
+    if (engine !== undefined) return engine;
+    try {
+      const path = '/pagefind/pagefind.js';
+      engine = await import(/* @vite-ignore */ path);
+      await engine!.init();
+    } catch {
+      engine = null;
+    }
+    return engine;
+  };
+
+  const render = (items: Array<{ url: string; title: string; excerpt: string }>, query: string) => {
+    results.innerHTML = '';
+    if (!items.length) {
+      hint.textContent = `没有找到和「${query}」相关的文章`;
+      return;
+    }
+    hint.textContent = `${items.length} 篇相关文章`;
+    for (const item of items) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = item.url;
+      const t = document.createElement('span');
+      t.className = 't';
+      t.textContent = item.title;
+      const e = document.createElement('span');
+      e.className = 'e';
+      // The excerpt is our own indexed text with <mark> added around matches.
+      e.innerHTML = item.excerpt;
+      a.append(t, e);
+      li.append(a);
+      results.append(li);
+    }
+  };
+
+  const run = async (raw: string) => {
+    const query = raw.trim();
+    const url = new URL(location.href);
+    if (query) url.searchParams.set('q', query);
+    else url.searchParams.delete('q');
+    history.replaceState(null, '', url);
+
+    if (!query) {
+      results.innerHTML = '';
+      hint.textContent = '';
+      return;
+    }
+
+    const pf = await load();
+    if (!pf) {
+      hint.textContent = '搜索索引需要构建后的站点，本地开发时不可用';
+      return;
+    }
+
+    const found = await pf.search(query);
+    // Pagefind indexes Chinese per character, so a Latin string can match on a
+    // single letter ("xyzzyplugh" hits every post containing "x"). Keep a result
+    // only when the query, or one of its words, actually appears in the title or
+    // the excerpt, which is built around the match.
+    const strip = (s: string) => s.replace(/<[^>]+>/g, '');
+    const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const relevant = (title: string, excerpt: string) => {
+      const hay = `${title} ${strip(excerpt)}`.toLowerCase();
+      return hay.includes(query.toLowerCase()) || terms.some((t) => t.length >= 2 && hay.includes(t));
+    };
+
+    const items = (
+      await Promise.all(
+        found.results.slice(0, 30).map((r: any) => r.data().then((d: any) => ({
+          url: d.url,
+          title: d.meta?.title ?? d.url,
+          excerpt: d.excerpt,
+        }))),
+      )
+    )
+      .filter((it) => relevant(it.title, it.excerpt))
+      .slice(0, 10);
+
+    render(items, query);
+  };
+
+  let timer: ReturnType<typeof setTimeout>;
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => run(input.value), 160);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      clearTimeout(timer);
+      run(input.value);
+    }
+    if (e.key === 'Escape') {
+      input.value = '';
+      run('');
+    }
+  });
+
+  const initial = new URL(location.href).searchParams.get('q');
+  if (initial) {
+    input.value = initial;
+    run(initial);
+  } else {
+    input.focus();
+  }
+</script>
+
+<style>
+  .search {
+    max-width: 48rem;
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    padding: 0 16px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    color: var(--text-3);
+    transition: border-color 0.15s var(--ease);
+  }
+
+  .field:focus-within {
+    border-color: var(--text-3);
+  }
+
+  .field input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: 400 16px var(--font);
+    outline: none;
+  }
+
+  .field input::placeholder {
+    color: var(--text-3);
+  }
+
+  /* The browser's own clear button is heavier than the rest of this page. */
+  .field input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .hint {
+    min-height: 22px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+
+  .results {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  /* Rows are built by the script, so every selector below them needs :global. */
+  .results :global(li + li) {
+    border-top: 1px solid var(--line);
+  }
+
+  .results :global(a) {
+    display: block;
+    padding: 16px 12px;
+    margin: 0 -12px;
+    border-radius: var(--r-md);
+    transition: background-color 0.15s var(--ease);
+  }
+
+  .results :global(a:hover) {
+    background: var(--bg-sunk);
+  }
+
+  .results :global(.t) {
+    display: block;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .results :global(.e) {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-2);
+  }
+
+  .results :global(mark) {
+    background: none;
+    color: var(--text);
+    font-weight: 500;
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+</style>

@@ -60,29 +60,38 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
       </div>
 
       <figure class="showcase rise rise-3">
-        <div class="showcase-bar">
-          <div class="showcase-tabs" role="group" aria-label="切换工具">
-            {heroTools.map((t, i) => (
-              <button type="button" data-tool={t.id} aria-pressed={i === 0 ? 'true' : 'false'}>
-                {t.data.alias ?? t.data.name}
-              </button>
-            ))}
+        <div class="stage" style={`aspect-ratio:${heroTools[0].data.hero!.width}/${heroTools[0].data.hero!.height}`}>
+          {heroTools.map((t, i) => (
+            <a
+              class="frame"
+              data-panel={t.id}
+              data-name={t.data.name}
+              data-alias={t.data.alias}
+              data-tagline={t.data.tagline}
+              href={`/tools/${t.id}/`}
+              data-active={i === 0 ? '' : undefined}
+              data-behind={i === 1 ? '' : undefined}
+              aria-hidden={i === 0 ? undefined : 'true'}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              <ThemedShot base={t.data.hero!.base} alt={t.data.hero!.alt} width={t.data.hero!.width} height={t.data.hero!.height} eager={i === 0} />
+            </a>
+          ))}
+          <div class="nav">
+            <button type="button" data-step="-1" aria-label="上一个工具"><Icon name="chevronLeft" size={18} /></button>
+            <button type="button" data-step="1" aria-label="下一个工具"><Icon name="chevronRight" size={18} /></button>
           </div>
-          <a class="all arrow-link" href="/tools/">全部工具 <Icon name="arrowRight" size={14} /></a>
         </div>
 
-        {heroTools.map((t, i) => (
-          <a class="shot" data-panel={t.id} href={`/tools/${t.id}/`} hidden={i !== 0}>
-            <ThemedShot base={t.data.hero!.base} alt={t.data.hero!.alt} width={t.data.hero!.width} height={t.data.hero!.height} eager />
-            <span class="shot-cap">
-              <span class="nm">
-                {t.data.name}
-                <span class="alias">{t.data.alias}</span>
-              </span>
-              <span class="tg">{t.data.tagline}</span>
+        <figcaption class="shot-cap">
+          <span class="cap-text">
+            <span class="nm">
+              <span data-cap="name">{heroTools[0].data.name}</span>
+              <span class="alias" data-cap="alias">{heroTools[0].data.alias}</span>
             </span>
-          </a>
-        ))}
+            <span class="tg" data-cap="tagline">{heroTools[0].data.tagline}</span>
+          </span>
+        </figcaption>
       </figure>
     </div>
   </section>
@@ -170,21 +179,68 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
 </BaseLayout>
 
 <script>
-  // Switch the hero between the desktop tools. One screenshot at a time, so each
-  // stays big enough to read the interface.
+  // The stack turns over on its own: the top card slides back and the one under
+  // it comes forward. There is no control to click — the picture itself links to
+  // its tool, so hovering or focusing pauses the rotation.
   const showcase = document.querySelector<HTMLElement>('.showcase');
   if (showcase) {
-    const tabs = [...showcase.querySelectorAll<HTMLButtonElement>('[data-tool]')];
-    const panels = [...showcase.querySelectorAll<HTMLElement>('[data-panel]')];
-    for (const tab of tabs) {
-      tab.addEventListener('click', () => {
-        const id = tab.dataset.tool;
-        tabs.forEach((t) => t.setAttribute('aria-pressed', String(t === tab)));
-        panels.forEach((p) => {
-          p.hidden = p.dataset.panel !== id;
-        });
+    const frames = [...showcase.querySelectorAll<HTMLElement>('[data-panel]')];
+    const cap = showcase.querySelector<HTMLElement>('.cap-text')!;
+    const nameEl = cap.querySelector<HTMLElement>('[data-cap="name"]')!;
+    const aliasEl = cap.querySelector<HTMLElement>('[data-cap="alias"]')!;
+    const tagEl = cap.querySelector<HTMLElement>('[data-cap="tagline"]')!;
+    let index = 0;
+    let timer: ReturnType<typeof setInterval> | undefined;
+
+    const show = (i: number) => {
+      index = i;
+      frames.forEach((f, j) => {
+        const active = i === j;
+        // The card after the active one waits underneath, showing a sliver of edge.
+        const behind = j === (i + 1) % frames.length;
+        f.toggleAttribute('data-active', active);
+        f.toggleAttribute('data-behind', behind && !active);
+        f.setAttribute('aria-hidden', String(!active));
+        f.tabIndex = active ? 0 : -1;
       });
+
+      // Swap the words midway through the fade, so they don't change before the picture.
+      cap.classList.add('swapping');
+      setTimeout(() => {
+        const f = frames[i];
+        nameEl.textContent = f.dataset.name ?? '';
+        aliasEl.textContent = f.dataset.alias ?? '';
+        tagEl.textContent = f.dataset.tagline ?? '';
+        cap.classList.remove('swapping');
+      }, 180);
+    };
+
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stop = () => clearInterval(timer);
+    const start = () => {
+      stop();
+      if (still || frames.length < 2) return;
+      timer = setInterval(() => show((index + 1) % frames.length), 7000);
+    };
+
+    // Hovering stops the rotation, so the arrows are the way through the stack
+    // while the pointer is over it. They also respond to the arrow keys.
+    const step = (d: number) => show((index + d + frames.length) % frames.length);
+    for (const b of showcase.querySelectorAll<HTMLButtonElement>('[data-step]')) {
+      b.addEventListener('click', () => step(Number(b.dataset.step)));
     }
+    showcase.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      step(e.key === 'ArrowRight' ? 1 : -1);
+    });
+
+    showcase.addEventListener('pointerenter', stop);
+    showcase.addEventListener('pointerleave', start);
+    showcase.addEventListener('focusin', stop);
+    showcase.addEventListener('focusout', start);
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+    start();
   }
 
   // Tabs for the topic list: click or arrow keys switch the panel, following the WAI-ARIA tabs pattern.
@@ -273,66 +329,104 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
   /* The one rich moment: the desktop tools as they actually look. */
   .showcase {
     margin: 0;
-    padding: 8px;
+    padding: 20px;
     border-radius: var(--r-xl);
     background: var(--surface);
     border: 1px solid var(--line);
     box-shadow: var(--shadow-md);
   }
 
-  .showcase-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 6px 12px;
+  /* Cards stack: the active one sits on top, the next peeks out below it, so a
+     switch reads as one card sliding over another rather than a plain fade.
+     The perspective pushes the back card down the z axis, so the stack has depth
+     instead of looking like two flat rectangles. */
+  .stage {
+    position: relative;
+    display: block;
+    margin-bottom: 48px;
+    perspective: 1100px;
+    perspective-origin: 50% 24%;
   }
 
-  .showcase-tabs {
-    display: flex;
-    gap: 4px;
-  }
-
-  .showcase-tabs button {
-    height: 28px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 8px;
-    background: none;
-    color: var(--text-3);
-    font: 400 13px/1 var(--font);
-    cursor: pointer;
-    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
-  }
-
-  .showcase-tabs button:hover {
-    color: var(--text);
-  }
-
-  .showcase-tabs button[aria-pressed='true'] {
-    background: var(--bg-sunk);
-    color: var(--text);
-  }
-
-  .showcase .all {
-    margin-left: auto;
-    font-size: 13px;
-    color: var(--text-3);
-    transition: color 0.15s var(--ease);
-  }
-
-  .showcase .all:hover {
-    color: var(--text);
-  }
-
-  .shot {
+  .frame {
+    position: absolute;
+    inset: 0;
     display: block;
     overflow: hidden;
     border-radius: var(--r-lg);
     border: 1px solid var(--line);
+    background: var(--bg-sunk);
+    opacity: 0;
+    transform: translateY(30px) translateZ(-140px) rotateX(10deg) rotateY(-4deg);
+    transform-origin: 50% 0;
+    transform-style: preserve-3d;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.55s var(--ease), transform 0.55s var(--ease), box-shadow 0.55s var(--ease);
   }
 
-  .shot[hidden] {
-    display: none;
+  .frame[data-behind] {
+    opacity: 0.62;
+    /* Shifted left and back, so the top card reads as sitting to the right of it. */
+    transform: translate(-46px, 62px) translateZ(-150px) rotateX(12deg) rotateY(-8deg);
+    z-index: 2;
+  }
+
+  .frame[data-active] {
+    opacity: 1;
+    transform: translateZ(0) rotateX(0deg);
+    z-index: 3;
+    box-shadow: var(--shadow-md);
+    pointer-events: auto;
+  }
+
+  /* Chevrons float over the screenshot on hover: no border, a soft surface disc
+     and a light shadow, so they read as part of the card rather than as buttons
+     dropped on top of it. */
+  .nav {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .nav button {
+    position: absolute;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    box-shadow: 0 1px 6px color-mix(in srgb, var(--text) 12%, transparent);
+    color: var(--text-2);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: opacity 0.2s var(--ease), color 0.15s var(--ease), background-color 0.15s var(--ease);
+  }
+
+  .nav [data-step='-1'] {
+    left: 12px;
+  }
+
+  .nav [data-step='1'] {
+    right: 12px;
+  }
+
+  .showcase:hover .nav button,
+  .nav button:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .nav button:hover {
+    background: var(--surface);
+    color: var(--text);
   }
 
   .shot-cap {
@@ -340,6 +434,18 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     flex-direction: column;
     gap: 2px;
     padding: 12px 12px 10px;
+  }
+
+  .cap-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    transition: opacity 0.2s var(--ease);
+  }
+
+  .cap-text.swapping {
+    opacity: 0;
   }
 
   .shot-cap .nm {
@@ -358,6 +464,16 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     font-size: 13px;
     line-height: 1.55;
     color: var(--text-2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .frame,
+    .shot-cap {
+      transition: none;
+    }
+    .frame {
+      transform: none;
+    }
   }
 
   .block {

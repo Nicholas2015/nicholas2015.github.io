@@ -1,7 +1,7 @@
 ---
-import { Code } from 'astro:components';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ToolCard from '../components/ToolCard.astro';
+import ThemedShot from '../components/ThemedShot.astro';
 import { WEB_TOOLS } from '../lib/webtools';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
@@ -14,6 +14,12 @@ import { categoryLabel, countBy, excerpt, formatDate, getPosts, getTools, postUr
 const posts = (await getPosts()).filter((p) => !p.data.draft);
 const tools = await getTools();
 const featured = (tools.some((t) => t.data.featured) ? tools.filter((t) => t.data.featured) : tools).slice(0, 3);
+
+// The hero shows the desktop tools as they actually look, so a first-time reader
+// sees something built, not another list. Only tools with a screenshot qualify.
+const heroTools = (tools.some((t) => t.data.featured) ? tools.filter((t) => t.data.featured) : tools)
+  .filter((t) => t.data.hero)
+  .slice(0, 2);
 
 // One lead story, then a compact list of the next ones.
 const [lead, ...rest] = posts;
@@ -28,18 +34,6 @@ const topics = countBy(posts.map((p) => p.data.category))
 
 const firstYear = posts.at(-1)?.data.date.getFullYear();
 const md = (p: Post) => formatDate(p.data.date).slice(5);
-
-// The step card shows a real sequence from a real post, so readers see what the notes are like.
-// Taken verbatim from "Spring AI 接 Ollama，本地大模型 RAG 实战".
-const stepPost = posts.find((p) => p.id === 'spring_ai接ollama_本地大模型rag实战') ?? lead;
-const steps = `# 对话模型，7B 在 16G 内存的机器上能跑
-ollama pull qwen2.5:7b
-
-# Embedding 模型，负责把文字转向量
-ollama pull nomic-embed-text
-
-# 确认服务起来了，默认监听 11434
-ollama serve`;
 ---
 
 <BaseLayout>
@@ -65,21 +59,30 @@ ollama serve`;
         </div>
       </div>
 
-      <figure class="step rise rise-3">
-        <a class="step-head" href={postUrl(stepPost)}>
-          <span class="step-meta num">{formatDate(stepPost.data.date)} · {stepPost.data.category}</span>
-          <span class="step-title">{stepPost.data.title}</span>
-        </a>
-        <div class="code-frame" data-static>
-          <div class="code-bar">
-            <span>shell</span>
-            <button type="button" class="copy" aria-label="复制命令"></button>
+      <figure class="showcase rise rise-3">
+        <div class="showcase-bar">
+          <div class="showcase-tabs" role="group" aria-label="切换工具">
+            {heroTools.map((t, i) => (
+              <button type="button" data-tool={t.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+                {t.data.alias ?? t.data.name}
+              </button>
+            ))}
           </div>
-          <Code code={steps} lang="shell" themes={{ light: 'github-light', dark: 'github-dark' }} defaultColor={false} />
+          <a class="all arrow-link" href="/tools/">全部工具 <Icon name="arrowRight" size={14} /></a>
         </div>
-        <figcaption>
-          <a class="arrow-link" href={postUrl(stepPost)}>接着看完整步骤 <Icon name="arrowRight" size={14} /></a>
-        </figcaption>
+
+        {heroTools.map((t, i) => (
+          <a class="shot" data-panel={t.id} href={`/tools/${t.id}/`} hidden={i !== 0}>
+            <ThemedShot base={t.data.hero!.base} alt={t.data.hero!.alt} width={t.data.hero!.width} height={t.data.hero!.height} eager />
+            <span class="shot-cap">
+              <span class="nm">
+                {t.data.name}
+                <span class="alias">{t.data.alias}</span>
+              </span>
+              <span class="tg">{t.data.tagline}</span>
+            </span>
+          </a>
+        ))}
       </figure>
     </div>
   </section>
@@ -167,6 +170,23 @@ ollama serve`;
 </BaseLayout>
 
 <script>
+  // Switch the hero between the desktop tools. One screenshot at a time, so each
+  // stays big enough to read the interface.
+  const showcase = document.querySelector<HTMLElement>('.showcase');
+  if (showcase) {
+    const tabs = [...showcase.querySelectorAll<HTMLButtonElement>('[data-tool]')];
+    const panels = [...showcase.querySelectorAll<HTMLElement>('[data-panel]')];
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.tool;
+        tabs.forEach((t) => t.setAttribute('aria-pressed', String(t === tab)));
+        panels.forEach((p) => {
+          p.hidden = p.dataset.panel !== id;
+        });
+      });
+    }
+  }
+
   // Tabs for the topic list: click or arrow keys switch the panel, following the WAI-ARIA tabs pattern.
   for (const root of document.querySelectorAll<HTMLElement>('[data-topics]')) {
     const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
@@ -250,8 +270,8 @@ ollama serve`;
     color: var(--text-3);
   }
 
-  /* The one rich moment: a real step from a real note. */
-  .step {
+  /* The one rich moment: the desktop tools as they actually look. */
+  .showcase {
     margin: 0;
     padding: 8px;
     border-radius: var(--r-xl);
@@ -260,52 +280,84 @@ ollama serve`;
     box-shadow: var(--shadow-md);
   }
 
-  .step-head {
+  .showcase-bar {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 12px 16px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 12px;
   }
 
-  .step-meta {
-    font-size: 12px;
+  .showcase-tabs {
+    display: flex;
+    gap: 4px;
+  }
+
+  .showcase-tabs button {
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--text-3);
+    font: 400 13px/1 var(--font);
+    cursor: pointer;
+    transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+  }
+
+  .showcase-tabs button:hover {
+    color: var(--text);
+  }
+
+  .showcase-tabs button[aria-pressed='true'] {
+    background: var(--bg-sunk);
+    color: var(--text);
+  }
+
+  .showcase .all {
+    margin-left: auto;
+    font-size: 13px;
+    color: var(--text-3);
+    transition: color 0.15s var(--ease);
+  }
+
+  .showcase .all:hover {
+    color: var(--text);
+  }
+
+  .shot {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line);
+  }
+
+  .shot[hidden] {
+    display: none;
+  }
+
+  .shot-cap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 12px 10px;
+  }
+
+  .shot-cap .nm {
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  .shot-cap .alias {
+    margin-left: 6px;
+    font-weight: 400;
+    font-size: 13px;
     color: var(--text-3);
   }
 
-  .step-title {
-    font-weight: 500;
-    font-size: 15px;
-    transition: color 0.15s var(--ease);
-  }
-
-  .step-head:hover .step-title {
-    color: var(--accent);
-  }
-
-  .step .code-frame {
-    border-radius: var(--r-md);
-  }
-
-  .step :global(pre) {
-    margin: 0;
-    padding: 16px 20px;
-    font: 400 13.5px/1.75 var(--mono);
-    background: var(--code-bg) !important;
-    overflow-x: auto;
-  }
-
-  .step figcaption {
-    padding: 12px 12px 8px;
-    font-size: 14px;
-  }
-
-  .step figcaption a {
+  .shot-cap .tg {
+    font-size: 13px;
+    line-height: 1.55;
     color: var(--text-2);
-    transition: color 0.15s var(--ease);
-  }
-
-  .step figcaption a:hover {
-    color: var(--text);
   }
 
   .block {
@@ -562,14 +614,6 @@ ollama serve`;
     }
     .panel ul {
       grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  @media (max-width: 560px) {
-    /* Commands scroll inside the frame; shrink a step so the common lines fit. */
-    .step :global(pre) {
-      font-size: 12.5px;
-      padding: 16px;
     }
   }
 </style>

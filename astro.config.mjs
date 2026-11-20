@@ -6,6 +6,8 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://nicholas2015.github.io',
   integrations: [mdx(), sitemap()],
+  // Warm the next page as soon as a link is hovered, so navigation feels instant.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
   markdown: {
     shikiConfig: {
       themes: { light: 'github-light', dark: 'github-dark' },

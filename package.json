@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
+    "check:links": "node scripts/check-links.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },

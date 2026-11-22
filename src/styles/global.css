@@ -3,23 +3,26 @@
 @import '@fontsource-variable/geist-mono/wght.css';
 
 :root {
-  --bg: #fbfbfc;
-  --bg-sunk: #f3f4f6;
+  /* One warm ramp for paper and ink, so the clay accent sits in the same temperature. */
+  --bg: #f7f7f4;
+  --bg-sunk: #efeee8;
   --surface: #ffffff;
-  --text: #0e1116;
-  --text-2: #464c55;
-  --text-3: #6b717b;
-  --line: rgba(14, 17, 22, 0.08);
-  --line-strong: rgba(14, 17, 22, 0.14);
+  --text: #26251e;
+  --text-2: #5a5852;
+  --text-3: #6f6b60;
+  --line: rgba(38, 37, 30, 0.09);
+  --line-strong: rgba(38, 37, 30, 0.16);
   /* The chrome is black and white; the accent is the logo's clay, darkened so text on paper passes 4.5:1. */
   --accent: #8a5f37;
   --accent-ink: #ffffff;
   --accent-soft: rgba(167, 123, 81, 0.1);
-  --code-bg: #f6f7f9;
+  /* Warm, paper-toned: code should read as another sheet of the page, not a UI panel. */
+  --code-bg: #f2f1eb;
+  --code-inline: #efeee7;
   --logo-ink: #30483d;
   --logo-clay: #a77b51;
-  --shadow-sm: 0 1px 2px rgba(14, 17, 22, 0.04), 0 1px 1px rgba(14, 17, 22, 0.03);
-  --shadow-md: 0 1px 2px rgba(14, 17, 22, 0.04), 0 8px 24px -8px rgba(14, 17, 22, 0.1);
+  --shadow-sm: 0 1px 2px rgba(38, 37, 30, 0.05), 0 1px 1px rgba(38, 37, 30, 0.03);
+  --shadow-md: 0 1px 2px rgba(38, 37, 30, 0.05), 0 8px 24px -8px rgba(38, 37, 30, 0.12);
 
   --font: 'Geist Variable', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif;
@@ -38,43 +41,45 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #0b0c0f;
-    --bg-sunk: #111317;
-    --surface: #14161b;
-    --text: #eceef2;
-    --text-2: #b0b5bd;
-    --text-3: #8a9099;
-    --line: rgba(236, 238, 242, 0.08);
-    --line-strong: rgba(236, 238, 242, 0.14);
+    --bg: #12110f;
+    --bg-sunk: #191814;
+    --surface: #1c1a17;
+    --text: #eeece6;
+    --text-2: #b4afa4;
+    --text-3: #8c877c;
+    --line: rgba(238, 236, 230, 0.09);
+    --line-strong: rgba(238, 236, 230, 0.16);
     --accent: #d9ad84;
-    --accent-ink: #0b0c0f;
+    --accent-ink: #12110f;
     --accent-soft: rgba(217, 173, 132, 0.12);
-    --code-bg: #111317;
+    --code-bg: #171512;
+    --code-inline: #1e1b17;
     --logo-ink: #b9cdbf;
     --logo-clay: #d0a073;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -12px rgba(0, 0, 0, 0.65);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --bg: #0b0c0f;
-  --bg-sunk: #111317;
-  --surface: #14161b;
-  --text: #eceef2;
-  --text-2: #b0b5bd;
-  --text-3: #8a9099;
-  --line: rgba(236, 238, 242, 0.08);
-  --line-strong: rgba(236, 238, 242, 0.14);
+  --bg: #12110f;
+  --bg-sunk: #191814;
+  --surface: #1c1a17;
+  --text: #eeece6;
+  --text-2: #b4afa4;
+  --text-3: #8c877c;
+  --line: rgba(238, 236, 230, 0.09);
+  --line-strong: rgba(238, 236, 230, 0.16);
   --accent: #d9ad84;
-  --accent-ink: #0b0c0f;
+  --accent-ink: #12110f;
   --accent-soft: rgba(217, 173, 132, 0.12);
-  --code-bg: #111317;
+  --code-bg: #171512;
+  --code-inline: #1e1b17;
   --logo-ink: #b9cdbf;
   --logo-clay: #d0a073;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -12px rgba(0, 0, 0, 0.65);
   color-scheme: dark;
 }
 
@@ -371,7 +376,7 @@ a.tag:hover {
 .prose :not(pre) > code {
   padding: 0.15em 0.4em;
   border-radius: 4px;
-  background: var(--bg-sunk);
+  background: var(--code-inline);
   border: 1px solid var(--line);
   color: var(--text);
 }

@@ -6,7 +6,6 @@ import { WEB_TOOLS } from '../lib/webtools';
 import CodeBlocks from '../components/CodeBlocks.astro';
 import Icon from '../components/Icon.astro';
 import Slogan from '../components/Slogan.astro';
-import ViewCount from '../components/ViewCount.astro';
 import Logo from '../components/Logo.astro';
 import { SITE } from '../consts';
 import { categoryLabel, countBy, excerpt, formatDate, getPosts, getTools, postUrl, type Post } from '../lib/content';
@@ -42,14 +41,12 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
       <div class="intro">
         <p class="stat rise">
           <span class="num">{firstYear}</span> 年起 · <span class="num">{posts.length}</span> 篇 · 最近更新 <span class="num">{formatDate(lead.data.date).slice(5)}</span>
-          <ViewCount field="site_pv" template=" · 累计 {n} 次浏览" />
-          <ViewCount field="site_uv" template=" · {n} 位访客" />
         </p>
         <h1 class="rise">
           <Logo size={56} class="mark" />
           <span>{SITE.title}</span>
         </h1>
-        <p class="subtitle rise rise-2">{SITE.author}的技术笔记</p>
+        <p class="subtitle rise rise-2">Kafka、网关、JVM 与 Java AI 的踩坑笔记</p>
         <Slogan lines={SITE.slogans} class="slogan rise rise-2" />
         <div class="cta rise rise-3">
           <a class="btn btn-primary arrow-link" href="/archives/">阅读文章 <Icon name="arrowRight" size={16} /></a>
@@ -151,7 +148,7 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
               </li>
             ))}
           </ul>
-          <a class="panel-more arrow-link" href={`/categories/${t.name}/`}>{t.name} 全部 <span class="num">{t.n}</span> 篇 <Icon name="arrowRight" size={14} /></a>
+          <a class="panel-more arrow-link" href={`/categories/${t.slug}/`}>{t.label} 全部 <span class="num">{t.n}</span> 篇 <Icon name="arrowRight" size={14} /></a>
         </div>
       ))}
     </div>
@@ -297,7 +294,7 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
 
   /* One line under the name, then the slogan types below it. */
   .subtitle {
-    margin-top: 18px;
+    margin-top: 16px;
     max-width: 32rem;
     font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
     line-height: 1.6;
@@ -305,7 +302,7 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
   }
 
   .hero :global(.slogan) {
-    margin-top: 10px;
+    margin-top: 12px;
     max-width: 32rem;
     font-size: clamp(0.9375rem, 1.5vw, 1rem);
     color: var(--text-3);
@@ -432,7 +429,7 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 12px 12px 10px;
+    padding: 12px;
   }
 
   .cap-text {
@@ -606,7 +603,7 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     align-items: baseline;
     gap: 6px;
     height: 36px;
-    padding: 0 14px;
+    padding: 0 16px;
     border: 0;
     border-radius: var(--r-md);
     background: transparent;
@@ -701,7 +698,7 @@ const md = (p: Post) => formatDate(p.data.date).slice(5);
     display: inline-flex;
     align-items: center;
     height: 36px;
-    padding: 0 14px;
+    padding: 0 16px;
     border-radius: var(--r-md);
     border: 1px solid var(--line);
     background: var(--surface);

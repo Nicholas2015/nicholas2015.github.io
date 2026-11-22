@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import ViewCount from './ViewCount.astro';
 import { SITE } from '../consts';
 const year = new Date().getFullYear();
 ---
@@ -20,7 +21,12 @@ const year = new Date().getFullYear();
     </nav>
   </div>
   <div class="container legal">
-    <span>© 2014–{year} {SITE.author}</span>
+    <span
+      >© 2014–{year} {SITE.author}<ViewCount field="site_pv" template=" · 累计 {n} 次浏览" /><ViewCount
+        field="site_uv"
+        template=" · {n} 位访客"
+      /></span
+    >
   </div>
 </footer>
 

@@ -5,7 +5,6 @@ import { SITE } from '../consts';
 
 const nav = [
   { href: '/archives/', label: '文章', match: ['/archives', '/20', '/categories'] },
-  { href: '/search/', label: '搜索', match: ['/search'] },
   { href: '/tools/', label: '小工具', match: ['/tools'] },
   { href: '/tags/', label: '标签', match: ['/tags'] },
   { href: '/about/', label: '关于', match: ['/about'] },
@@ -27,9 +26,13 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
       ))}
     </nav>
     <div class="actions">
-      <a class="icon-btn hide-sm" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub">
-        <Icon name="github" />
+      <a class="icon-btn" href="/search/" aria-label="搜索" title="搜索（按 / 或 Ctrl+K）">
+        <Icon name="search" size={18} />
       </a>
+      <a class="icon-btn hide-sm" href={SITE.github} target="_blank" rel="noopener" aria-label="GitHub">
+        <Icon name="github" size={16} />
+      </a>
+      <span class="sep hide-sm" aria-hidden="true"></span>
       <button class="icon-btn theme-toggle" type="button" aria-label="切换深浅色">
         <Icon name="moon" class="i-moon" />
         <Icon name="sun" class="i-sun" />
@@ -39,14 +42,29 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
 </header>
 
 <style>
+  /* The header is part of the page at the top and becomes chrome once you scroll. */
   .site-header {
     position: sticky;
     top: 0;
     z-index: 20;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition: background-color 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+
+  .site-header[data-scrolled] {
     background: color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom-color: var(--line);
     backdrop-filter: saturate(1.6) blur(14px);
     -webkit-backdrop-filter: saturate(1.6) blur(14px);
-    border-bottom: 1px solid var(--line);
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .site-header[data-scrolled] {
+      background: var(--bg);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
   }
 
   .bar {
@@ -99,6 +117,14 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
     gap: 4px;
   }
 
+  /* A hairline separates the external link from the site's own controls. */
+  .sep {
+    width: 1px;
+    height: 16px;
+    margin: 0 6px;
+    background: var(--line-strong);
+  }
+
   .icon-btn {
     display: grid;
     place-items: center;
@@ -145,8 +171,18 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
     .brand span {
       display: none;
     }
+    /* Four labels no longer fit at 360px; let the row scroll instead of clipping. */
+    nav {
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav::-webkit-scrollbar {
+      display: none;
+    }
     nav a {
-      padding: 0 8px;
+      flex: none;
+      padding: 0 10px;
     }
     .hide-sm {
       display: none;
@@ -156,6 +192,27 @@ const isActive = (match: string[]) => match.some((m) => path.startsWith(m));
 
 <script>
   const root = document.documentElement;
+
+  // Chrome appears only once the page has moved, so the first screen stays flat.
+  const header = document.querySelector<HTMLElement>('.site-header');
+  if (header) {
+    let queued = false;
+    const sync = () => {
+      header.toggleAttribute('data-scrolled', window.scrollY > 8);
+      queued = false;
+    };
+    addEventListener(
+      'scroll',
+      () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(sync);
+      },
+      { passive: true },
+    );
+    sync(); // Covers a restored scroll position on reload.
+  }
+
   document.querySelector('.theme-toggle')?.addEventListener('click', () => {
     const current =
       root.dataset.theme ?? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');

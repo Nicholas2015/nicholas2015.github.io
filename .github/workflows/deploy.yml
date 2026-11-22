@@ -22,6 +22,10 @@ jobs:
       - uses: withastro/action@v6
         with:
           node-version: 24
+      # A link pointing at nothing fails the build job, and `deploy` needs it,
+      # so a broken internal link never reaches the live site.
+      - name: Check internal links
+        run: node scripts/check-links.mjs
 
   deploy:
     needs: build

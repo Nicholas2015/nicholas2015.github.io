@@ -28,7 +28,8 @@ export const formatDate = (date: Date) => ymd.format(date);
 
 /** Hexo permalink format: :year/:month/:day/:title */
 export function postPath(post: Post) {
-  return `${formatDate(post.data.date).replaceAll('-', '/')}/${post.id}`;
+  // Posts live in YYYY/MM/ folders, so the id carries that prefix; the URL keeps only the file name.
+  return `${formatDate(post.data.date).replaceAll('-', '/')}/${post.id.split('/').at(-1)}`;
 }
 
 export const postUrl = (post: Post) => `/${postPath(post)}/`;

@@ -1,4 +1,4 @@
-// Import plain Markdown articles (no frontmatter) into src/content/blog/.
+// Import plain Markdown articles (no frontmatter) into src/content/blog/YYYY/MM/.
 // Usage: node scripts/import-articles.mjs <article-dir>
 //
 // Source layout: <dir>/<group>/<YYYY-MM-DD>-<name>.md, first line "# Title".
@@ -53,7 +53,12 @@ const TAGS = [
 const quote = (s) => JSON.stringify(s);
 const pad = (n) => String(n).padStart(2, '0');
 
-const existing = new Set((await readdir(outDir)).map((f) => f.toLowerCase()));
+// Posts sit in YYYY/MM/ folders; a name already used in any month counts as existing.
+const existing = new Map(
+  (await readdir(outDir, { recursive: true }))
+    .filter((f) => /\.mdx?$/.test(f))
+    .map((f) => [path.basename(f).toLowerCase(), f]),
+);
 const seenOut = new Set();
 const perDay = new Map();
 let count = 0;
@@ -114,7 +119,10 @@ for (const group of (await readdir(srcDir, { withFileTypes: true })).filter((d) 
       body.join('\n').replace(/^\n+/, ''),
     ].join('\n');
 
-    await writeFile(path.join(outDir, outName), out, 'utf8');
+    // An update rewrites the file where it is; a new post goes under its own YYYY/MM.
+    const rel = existing.get(lower) ?? path.join(day.slice(0, 4), day.slice(5, 7), outName);
+    await mkdir(path.dirname(path.join(outDir, rel)), { recursive: true });
+    await writeFile(path.join(outDir, rel), out, 'utf8');
     console.log(`${existing.has(lower) ? 'update' : 'add   '} ${day} [${category}] ${title}  {${tags.join(', ')}}`);
     count++;
   }

@@ -1,6 +1,9 @@
 export const SITE = {
   title: '白云阁',
   subtitle: '永不言弃',
+  // The line under the title on the home hero. Kept here so changing it never
+  // means touching the page, and deliberately names no language or product.
+  tagline: '把踩过的坑，整理成能直接用的经验',
   description: 'Stay hungry; Stay foolish!',
   author: '会编程的吕洞宾',
   github: 'https://github.com/Nicholas2015',
